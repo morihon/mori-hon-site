@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>学びの森｜本当に学力がつくドリル</title>
 <meta name="description" content="学年・単元・計算種別から文章題をランダム生成。将来的に正誤履歴で最適化。">
+
 <style>
   :root{ --brand:#2563eb; }
   *{ box-sizing:border-box; }
   body{ font-family: system-ui,-apple-system,"Noto Sans JP",sans-serif; margin:0; background:#f8fafc; color:#111827; }
   a{ color:var(--brand); text-decoration:none; }
+
   header{ background:linear-gradient(180deg,#eef2ff,transparent); }
   .container{ max-width:1100px; margin:0 auto; padding:20px; }
   .nav{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 0; }
@@ -17,32 +19,37 @@
   .logo-mark{ width:28px; height:28px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; display:inline-grid; place-items:center; font-size:14px; }
   .btn{ appearance:none; border:1px solid #cbd5e1; background:#fff; color:#111827; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
   .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
+
   .hero{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:28px; align-items:center; padding:30px 0 10px; }
   .hero h1{ margin:0 0 10px; font-size: clamp(26px,4vw,40px); line-height:1.1; }
   .hero p{ margin:0 0 14px; color:#374151; font-size:clamp(15px,2vw,18px); }
   .panel{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.04); }
   .section{ padding:40px 0; }
   .muted{ color:#6b7280; }
+
   fieldset{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; min-width:0; }
   legend{ padding:0 6px; color:#374151; }
   .row{ display:flex; flex-wrap:wrap; gap:10px 22px; }
   label.ck{ display:inline-flex; align-items:center; gap:8px; }
   label.ck span{ white-space:nowrap; } /* 日本語の1文字改行防止 */
+
   .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   input[type="number"]{ width:90px; padding:8px; border:1px solid #cbd5e1; border-radius:10px; }
   .box{ background:#f1f5f9; border-radius:12px; padding:12px; }
   .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
   .chip{ font-size:12px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:999px; background:#fff; }
+
   .qrow{ padding:10px 0; border-bottom:1px dashed #e5e7eb; display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; }
   .qrow:last-child{ border-bottom:0; }
   input.answer{ width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:10px; }
   .pill{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #cbd5e1; background:#fff; }
   .ok{ border-color:#16a34a; color:#166534; background:#ecfdf5; }
   .ng{ border-color:#dc2626; color:#991b1b; background:#fef2f2; }
+
   footer{ border-top:1px solid #e5e7eb; background:#fff; }
   @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } }
 
-  /* 出題下メタタグは非表示 */
+  /* 出題下のメタタグは非表示 */
   .meta-line{ display:none; }
 
   /* 計算種別カード（大きめ2カラム） */
@@ -53,39 +60,26 @@
   }
   @media (max-width: 900px){ .calc-ops{ grid-template-columns: 1fr; } }
 
-  .op-block{ border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; background:#fff; min-width:0; overflow:hidden; }
+  .op-block{ border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; background:#fff; min-width:0; overflow:hidden; }
   .op-head{ display:flex; align-items:center; gap:8px; }
   .op-label{ font-weight:600; }
-  .op-sub{ margin-top:10px; display:none; }
+  .op-sub{ margin-top:10px; padding:2px; display:none; } /* 2pxインセットで端重なり対策 */
   .op-block.active .op-sub{ display:block; }
 
-  /* 細目の中のグリッド（広め2列、狭幅なら自動で1列） */
-  .calc-ops .op-sub .grid{ display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:12px; }
+  /* 細目のグリッド（広め2列、狭幅なら1列） */
+  .calc-ops .op-sub .grid{ display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:14px; }
   @media (max-width: 700px){ .calc-ops .op-sub .grid{ grid-template-columns: 1fr; } }
-  .op-sub fieldset{ width:100%; min-width:0; border:1px dashed #e5e7eb; }
-  /* 内部 fieldset（点線枠）を外枠の内側に収める */
-.op-sub fieldset{
-  width: calc(100% - 12px); /* 外枠より少し狭く */
-  margin: 0 auto;           /* 中央寄せ */
-  padding: 8px;             /* 内側に余白 */
-  box-sizing: border-box;
-}
-  /* 外枠をほんの少し広げて“内側余白”を確保 */
-.op-block{ padding:14px 16px; }         /* 以前: 10px 12px */
 
-/* 内側コンテンツを1〜2pxだけ内側に寄せる（Safariの端重なり対策） */
-.op-sub{ margin-top:10px; padding:2px; } /* 新規 */
-
-/* 点線枠はそのまま100%でOK。calc指定は不要 */
-.op-sub fieldset{
-  width:100%;
-  margin:0;
-  padding:8px;
-  box-sizing:border-box;
-}
-
-/* グリッドの隙間も少し広げると視認性UP */
-.calc-ops .op-sub .grid{ gap:14px; }    /* 以前: 12px */
+  /* 点線枠は outline で“内側”に描画（幅に影響しない） */
+  .op-sub fieldset{
+    border:none;
+    outline:2px dotted #cbd5e1;
+    outline-offset:-6px;   /* 内側へ 6px */
+    padding:12px;
+    box-sizing:border-box;
+    width:100%;
+    margin:0;
+  }
 </style>
 </head>
 <body>
@@ -212,7 +206,7 @@
     renderPanels();
   }
 
-  // ヘルパ：チェック群 fieldset
+  // 汎用チェック群 fieldset
   function fieldset(title,key,values){
     const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
     const row=document.createElement('div'); row.className='row';
@@ -221,7 +215,8 @@
       const lab=document.createElement('label'); lab.className='ck';
       lab.innerHTML=`<input type="checkbox" id="${id}" data-key="${key}" value="${v}"><span>${v||'(未設定)'}</span>`;
       row.appendChild(lab);
-    }); fs.appendChild(row); return fs;
+    });
+    fs.appendChild(row); return fs;
   }
 
   // 計算種別：各チェックの直下に細目を表示（カード大きめ）
@@ -237,12 +232,10 @@
         </label>`;
       const sub=document.createElement('div'); sub.className='op-sub';
       const grid=document.createElement('div'); grid.className='grid';
-
       makeSubs(grid);
-      // 共通で学年制約（任意）
+      // 共通：学年制約（任意）
       grid.appendChild(fieldset('学年（任意で制約）','grade_inc',VALUES.grades));
       grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-
       sub.appendChild(grid); block.appendChild(head); block.appendChild(sub);
       const cb=head.querySelector('input[type="checkbox"]');
       const sync=()=>block.classList.toggle('active', cb.checked);
@@ -253,7 +246,7 @@
     const wrap=document.createElement('div'); wrap.className='calc-ops';
     wrap.appendChild(makeOpBlock('加法', (g)=>{
       g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁']));
-      g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問'])); // 追加
+      g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問']));
     }));
     wrap.appendChild(makeOpBlock('減法', (g)=>{
       g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁']));
@@ -271,7 +264,7 @@
     container.appendChild(wrap);
   }
 
-  // モード別パネル描画
+  // モード別パネル
   function renderPanels(){
     const panels=qs('#panels'); panels.innerHTML='';
     const mode=getMode();
@@ -303,7 +296,6 @@
   function generate(){
     const mode=getMode();
     const count=Math.max(1,Math.min(30,Number(qs('#count').value)||5));
-
     const Gexc=getChecked('grade_exc');
     const Uexc=getChecked('unit_exc');
 
