@@ -11,6 +11,7 @@
     p  { color:#374151; }
     .back a { text-decoration:none; color:#2563eb; font-weight:600; }
     .box { background:#f1f5f9; border-radius:8px; padding:12px 14px; margin:14px 0; }
+    .btn { appearance: none; border:1px solid #cbd5e1; background:#fff; padding:8px 12px; border-radius:8px; margin-right:8px; }
   </style>
 </head>
 <body>
@@ -18,53 +19,58 @@
     <h1>問題出題（仮）</h1>
     <div id="info" class="box">読み込み中...</div>
     <p>※ いまは仮ページです。ここに乱数出題ロジックとPDF出力を実装していきます。</p>
-    <div class="back"><a href="/">← 学年を選び直す</a></div>
-    <button id="gen" style="margin:10px 0;">問題をランダム生成（仮）</button>
-<button id="print">PDFにする（仮：印刷）</button>
-<div id="problems" class="box"></div>
+
+    <button id="gen" class="btn">問題をランダム生成（仮）</button>
+    <button id="print" class="btn">PDFにする（印刷）</button>
+    <div id="problems" class="box"></div>
+
+    <div class="back" style="margin-top:10px;"><a href="/">← 学年を選び直す</a></div>
   </div>
 
+  <!-- ここから下は必ず <script> タグの中に置いてください -->
   <script>
+    // クエリパラメータを読み取り
     const params = new URLSearchParams(location.search);
     const grade = params.get('grade') || '(未指定)';
-    const unit  = params.get('unit')  || '(未指定)';
+    const unit  = params.get('unit')  || 'all';
     const unitLabelMap = { calc:'計算', word:'文章題', geometry:'図形', all:'指定なし' };
     const gradeLabel = `小${grade}`;
     const unitLabel  = unitLabelMap[unit] || unit;
 
+    // 画面上に選択内容を表示
     document.getElementById('info').textContent =
       `選択：学年＝${gradeLabel}／単元＝${unitLabel}`;
+
+    // ダミー問題プール（超簡易）
+    const pool = {
+      calc: [
+        g => `小${g}：45＋${10*g}−${g} を計算しなさい。`,
+        g => `小${g}：${g*3}×7 を計算しなさい。`,
+        g => `小${g}：${g*12}÷3 の商を求めなさい。`,
+      ],
+      word: [
+        g => `小${g}：りんごを${g+2}個ずつ袋に入れます。全部で${(g+2)*3}個あるとき、袋はいくつ必要ですか。`,
+        g => `小${g}：Aさんは毎日${g+1}ページ読書します。${g+3}日で何ページ読めますか。`,
+      ],
+      geometry: [
+        g => `小${g}：一辺${g+3}cmの正方形の周の長さを求めなさい。`,
+        g => `小${g}：縦${g+2}cm・横${g+4}cmの長方形の面積を求めなさい。`,
+      ],
+    };
+
+    // 「問題をランダム生成」ボタン
+    document.getElementById('gen').addEventListener('click', () => {
+      const base = pool[unit] || [...pool.calc, ...pool.word, ...pool.geometry];
+      const items = [];
+      for (let i = 0; i < 5; i++) {
+        const f = base[Math.floor(Math.random() * base.length)];
+        items.push(`<li>${f(grade)}</li>`);
+      }
+      document.getElementById('problems').innerHTML = `<ol>${items.join('')}</ol>`;
+    });
+
+    // 印刷（→ PDF保存に使える）
+    document.getElementById('print').addEventListener('click', () => window.print());
   </script>
-  // ダミー問題プール（超簡易）
-const pool = {
-  calc: [
-    g => `小${g}：45＋${10*g}−${g} を計算しなさ。`,
-    g => `小${g}：${g*3}×7 の計算をしなさい。`,
-    g => `小${g}：${g*12}÷3 の商を求めなさい。`
-  ],
-  word: [
-    g => `小${g}：りんごを${g+2}個ずつ袋に入れます。全部で${(g+2)*3}個あるとき、袋はいくつ必要ですか。`,
-    g => `小${g}：Aさんは毎日${g+1}ページずつ読書します。${g+3}日で何ページ読めますか。`
-  ],
-  geometry: [
-    g => `小${g}：一辺${g+3}cmの正方形の周の長さを求めなさい。`,
-    g => `小${g}：縦${g+2}cm横${g+4}cmの長方形の面積を求めなさい。`
-  ]
-};
-
-// 生成ボタン
-document.getElementById('gen').addEventListener('click', () => {
-  const list = pool[unit] || [...pool.calc, ...pool.word];
-  const items = [];
-  for (let i = 0; i < 5; i++) {
-    const f = list[Math.floor(Math.random()*list.length)];
-    items.push(`<li>${f(grade)}</li>`);
-  }
-  document.getElementById('problems').innerHTML =
-    `<ol>${items.join('')}</ol>`;
-});
-
-// 印刷（→PDF保存に使える）
-document.getElementById('print').addEventListener('click', () => window.print());
 </body>
 </html>
