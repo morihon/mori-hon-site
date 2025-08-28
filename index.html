@@ -70,6 +70,22 @@
   padding: 8px;             /* 内側に余白 */
   box-sizing: border-box;
 }
+  /* 外枠をほんの少し広げて“内側余白”を確保 */
+.op-block{ padding:14px 16px; }         /* 以前: 10px 12px */
+
+/* 内側コンテンツを1〜2pxだけ内側に寄せる（Safariの端重なり対策） */
+.op-sub{ margin-top:10px; padding:2px; } /* 新規 */
+
+/* 点線枠はそのまま100%でOK。calc指定は不要 */
+.op-sub fieldset{
+  width:100%;
+  margin:0;
+  padding:8px;
+  box-sizing:border-box;
+}
+
+/* グリッドの隙間も少し広げると視認性UP */
+.calc-ops .op-sub .grid{ gap:14px; }    /* 以前: 12px */
 </style>
 </head>
 <body>
