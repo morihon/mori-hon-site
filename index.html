@@ -56,6 +56,29 @@
   .op-block.active .op-sub{ display:block; }
   .op-sub .row{ gap:10px 20px; }
   .op-sub fieldset{ border:1px dashed #e5e7eb; }
+  /* === レイアウト崩れ対策パッチ === */
+
+/* ラベルの日本語が1文字ずつ改行されないように */
+label.ck span{ white-space: nowrap; }
+
+/* カラムを広めに＆画面幅に応じて 3→2→1 カラムへ */
+.grid.cols-3{ grid-template-columns: repeat(3, minmax(260px, 1fr)); }
+@media (max-width: 1100px){
+  .grid.cols-3{ grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+}
+@media (max-width: 700px){
+  .grid.cols-3{ grid-template-columns: 1fr; }
+}
+
+/* 計算種別の細目は少し広めに（fieldset 群） */
+.op-sub .grid.cols-3{ grid-template-columns: repeat(2, minmax(260px, 1fr)); }
+@media (max-width: 700px){
+  .op-sub .grid.cols-3{ grid-template-columns: 1fr; }
+}
+
+/* 細かな余白調整（詰まり防止） */
+.op-sub .row{ gap: 8px 16px; }
+fieldset{ min-width: 0; }
 </style>
 </head>
 <body>
