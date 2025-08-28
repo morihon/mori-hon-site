@@ -63,6 +63,13 @@
   .calc-ops .op-sub .grid{ display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:12px; }
   @media (max-width: 700px){ .calc-ops .op-sub .grid{ grid-template-columns: 1fr; } }
   .op-sub fieldset{ width:100%; min-width:0; border:1px dashed #e5e7eb; }
+  /* 内部 fieldset（点線枠）を外枠の内側に収める */
+.op-sub fieldset{
+  width: calc(100% - 12px); /* 外枠より少し狭く */
+  margin: 0 auto;           /* 中央寄せ */
+  padding: 8px;             /* 内側に余白 */
+  box-sizing: border-box;
+}
 </style>
 </head>
 <body>
