@@ -1,123 +1,59 @@
-<!doctype html>
-<html lang="ja">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!doctype html><html lang="ja"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>学びの森｜本当に学力がつくドリル</title>
-<meta name="description" content="学年・単元・計算種別から文章題をランダム生成。将来的に正誤履歴で最適化。">
-
 <style>
-  :root{ --brand:#2563eb; }
-  *{ box-sizing:border-box; }
-  body{ font-family: system-ui,-apple-system,"Noto Sans JP",sans-serif; margin:0; background:#f8fafc; color:#111827; }
-  a{ color:var(--brand); text-decoration:none; }
+:root{--brand:#2563eb}*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;margin:0;background:#f8fafc;color:#111827}
+a{color:var(--brand);text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700}
+.logo-mark{width:28px;height:28px;border-radius:6px;border:1px solid #cbd5e1;background:#fff;display:grid;place-items:center;font-size:14px}
+.btn{appearance:none;border:1px solid #cbd5e1;background:#fff;color:#111827;padding:10px 14px;border-radius:10px;font-weight:600;cursor:pointer}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:28px;align-items:center;padding:30px 0 10px}
+.hero h1{margin:0 0 10px;font-size:clamp(26px,4vw,40px);line-height:1.1}
+.hero p{margin:0 0 14px;color:#374151;font-size:clamp(15px,2vw,18px)}
+.panel{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.04)}
+.section{padding:40px 0}.muted{color:#6b7280}
+fieldset{border:1px solid #e5e7eb;border-radius:12px;padding:12px;min-width:0}
+legend{padding:0 6px;color:#374151}
+.row{display:flex;flex-wrap:wrap;gap:10px 22px}
+label.ck{display:inline-flex;align-items:center;gap:8px}
+label.ck span{white-space:nowrap}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}
+input[type=number]{width:90px;padding:8px;border:1px solid #cbd5e1;border-radius:10px}
+.box{background:#f1f5f9;border-radius:12px;padding:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.chip{font-size:12px;padding:2px 8px;border:1px solid #cbd5e1;border-radius:999px;background:#fff}
+.qrow{padding:10px 0;border-bottom:1px dashed #e5e7eb;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.qrow:last-child{border-bottom:0}
+input.answer{width:160px;padding:8px;border:1px solid #cbd5e1;border-radius:10px}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #cbd5e1;background:#fff}
+.ok{border-color:#16a34a;color:#166534;background:#ecfdf5}
+.ng{border-color:#dc2626;color:#991b1b;background:#fef2f2}
+footer{border-top:1px solid #e5e7eb;background:#fff}
+@media(max-width:900px){.hero{grid-template-columns:1fr}}
+.meta-line{display:none}
 
-  header{ background:linear-gradient(180deg,#eef2ff,transparent); }
-  .container{ max-width:1100px; margin:0 auto; padding:20px; }
-  .nav{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 0; }
-  .logo{ display:flex; align-items:center; gap:10px; font-weight:700; }
-  .logo-mark{ width:28px; height:28px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; display:inline-grid; place-items:center; font-size:14px; }
-  .btn{ appearance:none; border:1px solid #cbd5e1; background:#fff; color:#111827; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
-  .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
-
-  .hero{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:28px; align-items:center; padding:30px 0 10px; }
-  .hero h1{ margin:0 0 10px; font-size: clamp(26px,4vw,40px); line-height:1.1; }
-  .hero p{ margin:0 0 14px; color:#374151; font-size:clamp(15px,2vw,18px); }
-  .panel{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.04); }
-  .section{ padding:40px 0; }
-  .muted{ color:#6b7280; }
-
-  fieldset{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; min-width:0; }
-  legend{ padding:0 6px; color:#374151; }
-  .row{ display:flex; flex-wrap:wrap; gap:10px 22px; }
-  label.ck{ display:inline-flex; align-items:center; gap:8px; }
-  label.ck span{ white-space:nowrap; } /* 日本語の1文字改行防止 */
-
-  .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
-  input[type="number"]{ width:90px; padding:8px; border:1px solid #cbd5e1; border-radius:10px; }
-  .box{ background:#f1f5f9; border-radius:12px; padding:12px; }
-  .chips{ display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
-  .chip{ font-size:12px; padding:2px 8px; border:1px solid #cbd5e1; border-radius:999px; background:#fff; }
-
-  .qrow{ padding:10px 0; border-bottom:1px dashed #e5e7eb; display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:center; }
-  .qrow:last-child{ border-bottom:0; }
-  input.answer{ width:160px; padding:8px; border:1px solid #cbd5e1; border-radius:10px; }
-  .pill{ display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; border:1px solid #cbd5e1; background:#fff; }
-  .ok{ border-color:#16a34a; color:#166534; background:#ecfdf5; }
-  .ng{ border-color:#dc2626; color:#991b1b; background:#fef2f2; }
-
-  footer{ border-top:1px solid #e5e7eb; background:#fff; }
-  @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } }
-
-  /* 出題下のメタタグは非表示 */
-  .meta-line{ display:none; }
-
-  /* 計算種別カード（大きめ2カラム） */
-  .calc-ops{
-    display:grid;
-    grid-template-columns: repeat(2, minmax(360px, 1fr));
-    gap:16px;
-  }
-  @media (max-width: 900px){ .calc-ops{ grid-template-columns: 1fr; } }
-
-  .op-block{ border:1px solid #e5e7eb; border-radius:10px; padding:14px 16px; background:#fff; min-width:0; overflow:hidden; }
-  .op-head{ display:flex; align-items:center; gap:8px; }
-  .op-label{ font-weight:600; }
-  .op-sub{ margin-top:10px; padding:2px; display:none; } /* 2pxインセットで端重なり対策 */
-  .op-block.active .op-sub{ display:block; }
-
-  /* 細目のグリッド（広め2列、狭幅なら1列） */
-  .calc-ops .op-sub .grid{ display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:14px; }
-  @media (max-width: 700px){ .calc-ops .op-sub .grid{ grid-template-columns: 1fr; } }
-
-  /* 点線枠は outline で“内側”に描画（幅に影響しない） */
-  .op-sub fieldset{
-    border:none;
-    outline:2px dotted #cbd5e1;
-    outline-offset:-6px;   /* 内側へ 6px */
-    padding:12px;
-    box-sizing:border-box;
-    width:100%;
-    margin:0;
-  }
-/* ==== 計算種別：左右2カラムレイアウト ==== */
-.calc-layout{ display:grid; grid-template-columns: 220px 1fr; gap:16px; }
-@media (max-width: 900px){ .calc-layout{ grid-template-columns: 1fr; } }
-
-/* 左カラム：四則リスト */
-.ops-list{ display:flex; flex-direction:column; gap:10px; }
-.ops-list .op-item{
-  display:flex; align-items:center; gap:8px; cursor:pointer;
-  background:#fff; border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px;
-}
-.ops-list .op-item input{ margin-right:6px; }
-.ops-list .op-item.active{ border-color:var(--brand); box-shadow:0 0 0 2px rgba(37,99,235,.12); }
-
-/* 右カラム：細目 */
-.details{ background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:14px; }
-.details .grid{ display:grid; grid-template-columns: repeat(2, minmax(240px,1fr)); gap:14px; }
-@media (max-width: 900px){ .details .grid{ grid-template-columns: 1fr; } }
-
-/* 点線枠は outline で“内側”に描画（幅に影響しない） */
-.op-sub fieldset,
-.details fieldset{
-  border:none; outline:2px dotted #cbd5e1; outline-offset:-6px;
-  padding:12px; box-sizing:border-box; width:100%; margin:0;
-}
-
-/* ラベルの折返し（細目では重なり防止のため折り返し可） */
-label.ck span{ white-space:nowrap; }            /* 既存の行はそのまま */
-.details label.ck span{ white-space:normal; }    /* 右カラム内は折返しOK */
+/* === 新：計算種別の左右2カラム === */
+.calc-layout{display:grid;grid-template-columns:220px 1fr;gap:16px}
+@media(max-width:900px){.calc-layout{grid-template-columns:1fr}}
+.ops-list{display:flex;flex-direction:column;gap:10px}
+.ops-list .op-item{display:flex;align-items:center;gap:8px;cursor:pointer;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px}
+.ops-list .op-item input{margin-right:6px}
+.ops-list .op-item.active{border-color:var(--brand);box-shadow:0 0 0 2px rgba(37,99,235,.12)}
+.details{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px}
+.details .grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:14px}
+@media(max-width:900px){.details .grid{grid-template-columns:1fr}}
+.op-sub fieldset,.details fieldset{border:none;outline:2px dotted #cbd5e1;outline-offset:-6px;padding:12px;box-sizing:border-box;width:100%;margin:0}
+.details label.ck span{white-space:normal}
 </style>
-</head>
-<body>
+</head><body>
 <header>
   <div class="container nav">
     <div class="logo"><span class="logo-mark">森</span> 学びの森</div>
-    <div>
-      <a class="btn" href="#how">しくみ</a>
-      <a class="btn primary" href="#try">今すぐ出題</a>
-    </div>
+    <div><a class="btn" href="#how">しくみ</a><a class="btn primary" href="#try">今すぐ出題</a></div>
   </div>
   <div class="container hero">
     <div>
@@ -126,31 +62,29 @@ label.ck span{ white-space:nowrap; }            /* 既存の行はそのまま *
       <a class="btn primary" href="#try">条件を選んで出題</a>
       <a class="btn" href="/app/select.html">従来UI</a>
     </div>
-    <div class="panel" style="padding:16px;">
-      <div class="muted" style="font-size:14px;">プレビュー</div>
-      <div class="muted" style="font-size:13px;">この下に本番の選択UIがあります</div>
+    <div class="panel" style="padding:16px">
+      <div class="muted" style="font-size:14px">プレビュー</div>
+      <div class="muted" style="font-size:13px">この下に本番の選択UIがあります</div>
     </div>
   </div>
 </header>
 
 <main class="section" id="try">
   <div class="container">
-    <h2 style="margin:0 0 8px;">出題条件の選択</h2>
+    <h2 style="margin:0 0 8px">出題条件の選択</h2>
     <p class="muted" id="status">読み込み中…（/app/problems.json を参照）</p>
 
-    <div class="panel" style="padding:16px; margin-top:10px;">
-      <!-- モード -->
+    <div class="panel" style="padding:16px;margin-top:10px">
       <fieldset>
         <legend>出題モード</legend>
         <div class="row">
-          <label class="ck"><input type="radio" name="mode" value="gradeUnit" checked> 学年 × 単元で指定</label>
-          <label class="ck"><input type="radio" name="mode" value="calcType"> 計算種別で指定</label>
+          <label class="ck"><input type="radio" name="mode" value="gradeUnit"> 学年 × 単元で指定</label>
+          <label class="ck"><input type="radio" name="mode" value="calcType" checked> 計算種別で指定</label>
           <label class="ck"><input type="radio" name="mode" value="gradeOnly"> 学年のみで指定</label>
         </div>
       </fieldset>
 
-      <!-- ここにモード連動の項目 -->
-      <div id="panels" style="margin-top:10px;"></div>
+      <div id="panels" style="margin-top:10px"></div>
 
       <div class="controls">
         <label>出題数 <input id="count" type="number" min="1" max="30" value="5"></label>
@@ -160,326 +94,230 @@ label.ck span{ white-space:nowrap; }            /* 既存の行はそのまま *
         <button id="resetBtn" class="btn">回答リセット</button>
       </div>
 
-      <div id="summary" class="chips" style="margin-top:8px;"></div>
-      <div id="problems" class="box" style="margin-top:12px;"></div>
+      <div id="summary" class="chips" style="margin-top:8px"></div>
+      <div id="problems" class="box" style="margin-top:12px"></div>
     </div>
   </div>
 </main>
 
 <section class="section" id="how">
   <div class="container">
-    <h2 style="margin:0 0 8px;">しくみ</h2>
+    <h2 style="margin:0 0 8px">しくみ</h2>
     <p class="muted">テンプレ（Templates）で文章問題を設計し、変数をランダムに展開。出題条件でフィルタした候補からユニークな問題を生成します。将来は正誤履歴と紐づけて最適化予定。</p>
   </div>
 </section>
 
-<footer>
-  <div class="container" style="display:flex; justify-content:space-between; padding:16px 0;">
-    <div class="muted">© 学びの森</div>
-    <div class="muted"><a href="/privacy.html">プライバシー</a> ・ <a href="/terms.html">利用規約</a></div>
-  </div>
-</footer>
+<footer><div class="container" style="display:flex;justify-content:space-between;padding:16px 0">
+  <div class="muted">© 学びの森</div>
+  <div class="muted"><a href="/privacy.html">プライバシー</a> ・ <a href="/terms.html">利用規約</a></div>
+</div></footer>
 
 <script>
-  // ========= ユーティリティ =========
-  const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
-  const uniq=a=>[...new Set(a)];
-  const getMode=()=>document.querySelector('input[name="mode"]:checked').value;
-  const qs=(s,el=document)=>el.querySelector(s);
-  const qsa=(s,el=document)=>[...el.querySelectorAll(s)];
-  const getChecked=(prefix)=>qsa('input[type="checkbox"][data-key^="'+prefix+'"]:checked').map(el=>el.value);
+const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const uniq=a=>[...new Set(a)];
+const qs=(s,el=document)=>el.querySelector(s);
+const qsa=(s,el=document)=>[...el.querySelectorAll(s)];
+const getMode=()=>document.querySelector('input[name="mode"]:checked').value;
+const getChecked=(prefix)=>qsa('input[type="checkbox"][data-key^="'+prefix+'"]:checked').map(el=>el.value);
 
-  // ========= データ読み込み =========
-  let ALL=[], CURRENT=[];
-  let VALUES={grades:[], units:[], ops:['加法','減法','乗法','除法']};
+let ALL=[], CURRENT=[], VALUES={grades:[],units:[],ops:['加法','減法','乗法','除法']};
 
-  fetch('/app/problems.json').then(r=>r.json()).then(json=>{
-    ALL=json; collectValues(); initUI();
-    qs('#status').textContent=`読み込み完了：テンプレ ${ALL.length} 件`;
-  }).catch(e=>{
-    qs('#status').textContent='読み込みエラー（/app/problems.json を配置してください）';
-    console.error(e); collectValues(true); initUI();
+fetch('/app/problems.json').then(r=>r.json()).then(j=>{ALL=j;collectValues();initUI();qs('#status').textContent=`読み込み完了：テンプレ ${ALL.length} 件`;})
+.catch(e=>{qs('#status').textContent='読み込みエラー（/app/problems.json を配置してください）';console.error(e);collectValues(true);initUI();});
+
+function collectValues(useDummy=false){
+  const grades=uniq(ALL.map(x=>String(x.grade))).sort();
+  const units=uniq(ALL.map(x=>x.unit_label||x.unit||'').filter(Boolean)).sort();
+  const D_GRADES=['1','2','3','4','5','6'];
+  const D_UNITS=['計算/加法','計算/減法','計算/乗法','計算/除法','文章題/等分け','文章題/単価と個数'];
+  VALUES={grades:grades.length?grades:D_GRADES,units:units.length?units:D_UNITS,ops:['加法','減法','乗法','除法']};
+}
+
+const evalExpr=(expr,env)=>{const safe=expr.replace(/[a-zA-Z_][a-zA-Z0-9_]*/g,m=>(m in env?String(env[m]):m));return eval(safe);}
+const sampleEnv=(spec,maxTry=100)=>{
+  const parts=(spec||'').split(';').map(s=>s.trim()).filter(Boolean);
+  for(let t=0;t<maxTry;t++){
+    const env={};
+    parts.forEach(p=>{const [k,v]=(p.split(':').map(s=>s.trim()));if(!k||!v)return;const m=v.match(/^(-?\d+)\.\.(-?\d+)$/);if(m)env[k]=Math.floor(Math.random()*(Number(m[2])-Number(m[1])+1))+Number(m[1]);});
+    parts.forEach(p=>{const [k,v]=(p.split(':').map(s=>s.trim()));if(!k||!v)return;if(!/\.{2}/.test(v)&&k!=='ensure'){env[k]=evalExpr(v,env);}});
+    const en=parts.find(p=>p.startsWith('ensure'));if(en){const cond=en.split(':')[1].trim();if(!evalExpr(cond,env))continue;}
+    return env;
+  } return null;
+};
+const fillTemplate=(tpl,env)=>tpl.replace(/{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}/g,(_,k)=>env[k]);
+
+function initUI(){
+  qsa('input[name="mode"]').forEach(r=>r.addEventListener('change',renderPanels));
+  qs('#gen').addEventListener('click',generate);
+  qs('#gradeBtn').addEventListener('click',gradeAll);
+  qs('#printBtn').addEventListener('click',()=>window.print());
+  qs('#resetBtn').addEventListener('click',resetAnswers);
+  renderPanels();
+}
+
+function fieldset(title,key,values){
+  const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
+  const row=document.createElement('div'); row.className='row';
+  values.forEach(v=>{
+    const id=key+'__'+(v||'_');
+    const lab=document.createElement('label'); lab.className='ck';
+    lab.innerHTML=`<input type="checkbox" id="${id}" data-key="${key}" value="${v}"><span>${v||'(未設定)'}</span>`;
+    row.appendChild(lab);
   });
+  fs.appendChild(row); return fs;
+}
 
-  function collectValues(useDummy=false){
-    const grades = uniq(ALL.map(x=>String(x.grade))).sort();
-    const units  = uniq(ALL.map(x=>x.unit_label||x.unit||'').filter(Boolean)).sort();
-    const D_GRADES=['1','2','3','4','5','6'];
-    const D_UNITS=['計算/加法','計算/減法','計算/乗法','計算/除法','文章題/等分け','文章題/単価と個数'];
-    VALUES = { grades: grades.length?grades:D_GRADES, units: units.length?units:D_UNITS, ops:['加法','減法','乗法','除法'] };
-  }
-
-  // ========= 変数展開 =========
-  const evalExpr=(expr,env)=>{ const safe=expr.replace(/[a-zA-Z_][a-zA-Z0-9_]*/g,m=>(m in env?String(env[m]):m)); return eval(safe); };
-  const sampleEnv=(spec,maxTry=100)=>{
-    const parts=(spec||'').split(';').map(s=>s.trim()).filter(Boolean);
-    for(let t=0;t<maxTry;t++){
-      const env={};
-      parts.forEach(p=>{ const [k,v]=(p.split(':').map(s=>s.trim())); if(!k||!v) return;
-        const m=v.match(/^(-?\d+)\.\.(-?\d+)$/); if(m) env[k]=Math.floor(Math.random()*(Number(m[2])-Number(m[1])+1))+Number(m[1]); });
-      parts.forEach(p=>{ const [k,v]=(p.split(':').map(s=>s.trim())); if(!k||!v) return; if(!/\.{2}/.test(v) && k!=='ensure'){ env[k]=evalExpr(v,env); }});
-      const en=parts.find(p=>p.startsWith('ensure')); if(en){ const cond=en.split(':')[1].trim(); if(!evalExpr(cond,env)) continue; }
-      return env;
-    } return null;
-  };
-  const fillTemplate=(tpl,env)=>tpl.replace(/{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}/g,(_,k)=>env[k]);
-
-  // ========= UI構築 =========
-  function initUI(){
-    qsa('input[name="mode"]').forEach(r=>r.addEventListener('change', renderPanels));
-    qs('#gen').addEventListener('click', generate);
-    qs('#gradeBtn').addEventListener('click', gradeAll);
-    qs('#printBtn').addEventListener('click', ()=>window.print());
-    qs('#resetBtn').addEventListener('click', resetAnswers);
-    renderPanels();
-  }
-
-  // 汎用チェック群 fieldset
-  function fieldset(title,key,values){
-    const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
-    const row=document.createElement('div'); row.className='row';
-    values.forEach(v=>{
-      const id=key+'__'+(v||'_');
-      const lab=document.createElement('label'); lab.className='ck';
-      lab.innerHTML=`<input type="checkbox" id="${id}" data-key="${key}" value="${v}"><span>${v||'(未設定)'}</span>`;
-      row.appendChild(lab);
-    });
-    fs.appendChild(row); return fs;
-  }
-
- // 計算種別：左に四則、右に細目を出す
+/* ★ 新：計算種別 UI（左：四則／右：細目） */
 function renderCalcSubPanels(container){
-  container.innerHTML = '';
+  container.innerHTML='';
+  const wrap=document.createElement('div'); wrap.className='calc-layout';
+  const left=document.createElement('div'); left.className='ops-list';
+  const right=document.createElement('div'); right.className='details';
+  right.innerHTML='<div class="muted">左の計算を選ぶと、細かな条件が表示されます。</div>';
+  wrap.append(left,right); container.appendChild(wrap);
 
-  // 左右ラッパー
-  const wrap  = document.createElement('div'); wrap.className = 'calc-layout';
-  const left  = document.createElement('div'); left.className  = 'ops-list';
-  const right = document.createElement('div'); right.className = 'details';
-  right.innerHTML = '<div class="muted">左の計算を選ぶと、細かな条件が表示されます。</div>';
-  wrap.append(left, right); container.appendChild(wrap);
-
-  // 四則ごとの細目ビルダー
-  const builders = {
-    '加法': (grid)=>{
-      grid.appendChild(fieldset('桁',          'add_dig',   ['1桁','2桁','3桁']));
-      grid.appendChild(fieldset('繰り上がり',  'add_carry', ['繰り上がりあり','なし','不問']));
-    },
-    '減法': (grid)=>{
-      grid.appendChild(fieldset('桁',          'sub_dig',   ['1桁','2桁','3桁']));
-      grid.appendChild(fieldset('繰下がり',    'sub_borrow',['繰下がりあり','なし','不問']));
-    },
-    '乗法': (grid)=>{
-      grid.appendChild(fieldset('形式',        'mul_form',  ['1桁×1桁','2桁×1桁','2桁×2桁']));
-      grid.appendChild(fieldset('繰り上がり',  'mul_carry', ['繰り上がりあり','なし','不問']));
-    },
-    '除法': (grid)=>{
-      grid.appendChild(fieldset('形式',        'div_form',  ['2桁÷1桁','3桁÷1桁','2桁÷2桁']));
-      grid.appendChild(fieldset('余り',        'div_rem',   ['あり','なし','不問']));
-    }
+  const builders={
+    '加法': g=>{ g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁'])); g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問'])); },
+    '減法': g=>{ g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁'])); g.appendChild(fieldset('繰下がり','sub_borrow',['繰下がりあり','なし','不問'])); },
+    '乗法': g=>{ g.appendChild(fieldset('形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁'])); g.appendChild(fieldset('繰り上がり','mul_carry',['繰り上がりあり','なし','不問'])); },
+    '除法': g=>{ g.appendChild(fieldset('形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁'])); g.appendChild(fieldset('余り','div_rem',['あり','なし','不問'])); }
   };
 
-  // 左：四則チェック + クリックで右に細目
-  const ops = ['加法','減法','乗法','除法'];
-  ops.forEach(name=>{
-    const row = document.createElement('label');
-    row.className = 'op-item';
-    row.innerHTML = `<input type="checkbox" data-key="op_sel" value="${name}"><span>${name}</span>`;
-    const input = row.querySelector('input');
+  function renderRight(opName){
+    right.innerHTML='';
+    const h=document.createElement('h3'); h.style.margin='0 0 8px'; h.textContent=`${opName} の条件`;
+    const grid=document.createElement('div'); grid.className='grid';
+    builders[opName](grid);
+    grid.appendChild(fieldset('学年（任意で制約）','grade_inc',VALUES.grades));
+    grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+    right.append(h,grid);
+  }
 
-    // active 表示切替
-    const setActiveStyle = () => row.classList.toggle('active', input.checked);
-
-    // クリック（見に行く）
-    row.addEventListener('click', (e)=>{
-      // チェックのON/OFFはブラウザに任せる
-      // 右ペインをこの計算で更新
-      renderRight(name);
-      // 見た目更新（少し遅延してチェック状態反映後に）
-      setTimeout(setActiveStyle, 0);
-    });
-
-    // 初期状態のためにも change でも見た目更新
-    input.addEventListener('change', setActiveStyle);
-
+  ['加法','減法','乗法','除法'].forEach(name=>{
+    const row=document.createElement('label'); row.className='op-item';
+    row.innerHTML=`<input type="checkbox" data-key="op_sel" value="${name}"><span>${name}</span>`;
+    const input=row.querySelector('input');
+    const setActive=()=>row.classList.toggle('active',input.checked);
+    row.addEventListener('click',()=>{ renderRight(name); setTimeout(setActive,0); });
+    input.addEventListener('change',setActive);
     left.appendChild(row);
   });
 
-  function renderRight(opName){
-    right.innerHTML = '';
-    const h = document.createElement('h3');
-    h.style.margin = '0 0 8px';
-    h.textContent = `${opName} の条件`;
-    const grid = document.createElement('div');
-    grid.className = 'grid';
-
-    // 細目
-    builders[opName](grid);
-    // 学年制約（任意）
-    grid.appendChild(fieldset('学年（任意で制約）','grade_inc',VALUES.grades));
-    grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-
-    right.append(h, grid);
-  }
-
-  // 初期表示：最初の項目を表示（チェックは任意）
-  renderRight('加法');
+  renderRight('加法'); // 初期表示
 }
-    const wrap=document.createElement('div'); wrap.className='calc-ops';
-    wrap.appendChild(makeOpBlock('加法', (g)=>{
-      g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁']));
-      g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問']));
-    }));
-    wrap.appendChild(makeOpBlock('減法', (g)=>{
-      g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁']));
-      g.appendChild(fieldset('繰下がり','sub_borrow',['繰下がりあり','なし','不問']));
-    }));
-    wrap.appendChild(makeOpBlock('乗法', (g)=>{
-      g.appendChild(fieldset('形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁']));
-      g.appendChild(fieldset('繰り上がり','mul_carry',['繰り上がりあり','なし','不問']));
-    }));
-    wrap.appendChild(makeOpBlock('除法', (g)=>{
-      g.appendChild(fieldset('形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁']));
-      g.appendChild(fieldset('余り','div_rem',['あり','なし','不問']));
-    }));
 
-    container.appendChild(wrap);
+function renderPanels(){
+  const panels=qs('#panels'); panels.innerHTML='';
+  const mode=getMode();
+  if(mode==='gradeUnit'){
+    const grid=document.createElement('div');
+    grid.style.display='grid'; grid.style.gap='16px';
+    grid.style.gridTemplateColumns='repeat(2,minmax(300px,1fr))';
+    grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
+    grid.appendChild(fieldset('単元（含む）','unit_inc',VALUES.units));
+    grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+    grid.appendChild(fieldset('単元（除外）','unit_exc',VALUES.units));
+    panels.appendChild(grid);
+  }else if(mode==='calcType'){
+    renderCalcSubPanels(panels);
+  }else{
+    const grid=document.createElement('div');
+    grid.style.display='grid'; grid.style.gap='16px';
+    grid.style.gridTemplateColumns='repeat(2,minmax(300px,1fr))';
+    grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
+    grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+    panels.appendChild(grid);
   }
+}
 
-  // モード別パネル
-  function renderPanels(){
-    const panels=qs('#panels'); panels.innerHTML='';
-    const mode=getMode();
+const getVal=(t,k)=>t[k]||'';
 
-    if (mode==='gradeUnit'){
-      const grid=document.createElement('div');
-      grid.style.display='grid'; grid.style.gap='16px';
-      grid.style.gridTemplateColumns='repeat(2, minmax(300px, 1fr))';
-      grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
-      grid.appendChild(fieldset('単元（含む）','unit_inc',VALUES.units));
-      grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-      grid.appendChild(fieldset('単元（除外）','unit_exc',VALUES.units));
-      panels.appendChild(grid);
-    } else if (mode==='calcType'){
-      renderCalcSubPanels(panels);
-    } else if (mode==='gradeOnly'){
-      const grid=document.createElement('div');
-      grid.style.display='grid'; grid.style.gap='16px';
-      grid.style.gridTemplateColumns='repeat(2, minmax(300px, 1fr))';
-      grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
-      grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-      panels.appendChild(grid);
+function generate(){
+  const mode=getMode();
+  const count=Math.max(1,Math.min(30,Number(qs('#count').value)||5));
+  const Gexc=getChecked('grade_exc');
+  const Uexc=getChecked('unit_exc');
+
+  const pass=t=>{
+    const unitLab=getVal(t,'unit_label')||getVal(t,'unit');
+    if(Gexc.length && Gexc.includes(String(t.grade))) return false;
+    if(Uexc.length && Uexc.includes(unitLab)) return false;
+
+    if(mode==='gradeUnit'){
+      const Ginc=getChecked('grade_inc'); const Uinc=getChecked('unit_inc');
+      if(Ginc.length && !Ginc.includes(String(t.grade))) return false;
+      if(Uinc.length && !Uinc.includes(unitLab)) return false; return true;
     }
-  }
-
-  // ========= 出題・採点 =========
-  const getVal=(t,k)=>t[k]||'';
-
-  function generate(){
-    const mode=getMode();
-    const count=Math.max(1,Math.min(30,Number(qs('#count').value)||5));
-    const Gexc=getChecked('grade_exc');
-    const Uexc=getChecked('unit_exc');
-
-    const pass=t=>{
-      const unitLab=getVal(t,'unit_label')||getVal(t,'unit');
-      if (Gexc.length && Gexc.includes(String(t.grade))) return false;
-      if (Uexc.length && Uexc.includes(unitLab)) return false;
-
-      if (mode==='gradeUnit'){
-        const Ginc=getChecked('grade_inc');
-        const Uinc=getChecked('unit_inc');
-        if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
-        if (Uinc.length && !Uinc.includes(unitLab)) return false;
-        return true;
-      }
-      if (mode==='gradeOnly'){
-        const Ginc=getChecked('grade_inc');
-        if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
-        return true;
-      }
-
-      // 計算種別
-      const opsChosen=getChecked('op_sel'); if (!opsChosen.length) return false;
-      if (!opsChosen.includes(getVal(t,'operation'))) return false;
-
+    if(mode==='gradeOnly'){
       const Ginc=getChecked('grade_inc');
-      if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
-
-      if (getVal(t,'operation')==='加法'){
-        const digs=getChecked('add_dig'); if (digs.length && !digs.includes(getVal(t,'digit'))) return false;
-        const cars=getChecked('add_carry'); if (cars.length && !cars.includes(getVal(t,'carry'))) return false;
-      }
-      if (getVal(t,'operation')==='減法'){
-        const digs=getChecked('sub_dig'); if (digs.length && !digs.includes(getVal(t,'digit'))) return false;
-        const bor=getChecked('sub_borrow'); if (bor.length && !bor.includes(getVal(t,'carry'))) return false; // carry列を流用
-      }
-      if (getVal(t,'operation')==='乗法'){
-        const forms=getChecked('mul_form'); if (forms.length && !forms.includes(getVal(t,'digit'))) return false;
-        const cars=getChecked('mul_carry'); if (cars.length && !cars.includes(getVal(t,'carry'))) return false;
-      }
-      if (getVal(t,'operation')==='除法'){
-        const forms=getChecked('div_form'); if (forms.length && !forms.includes(getVal(t,'digit'))) return false;
-        const rems=getChecked('div_rem'); if (rems.length && !rems.includes(getVal(t,'remainder'))) return false;
-      }
-      return true;
-    };
-
-    const candidates=ALL.filter(pass);
-    const summary=qs('#summary');
-    if (!candidates.length){
-      summary.innerHTML=`<span class="muted">条件に合うテンプレがありません（フィルタを緩めてください）</span>`;
-      qs('#problems').innerHTML=''; CURRENT=[]; return;
+      if(Ginc.length && !Ginc.includes(String(t.grade))) return false; return true;
     }
 
-    const chosen=[];
-    for(let i=0;i<count;i++){
-      const t=candidates[rnd(0,candidates.length-1)];
-      const env=sampleEnv(t.vars); if(!env){ i--; continue; }
-      const text=fillTemplate(t.template,env);
-      const ans=String(evalExpr(t.answer_expr,env));
-      chosen.push({
-        id:`${t.id}-${Date.now()}-${i}`,
-        qid:t.id, text, answer:ans,
-        meta:{ grade:t.grade, unit:getVal(t,'unit_label')||getVal(t,'unit'), operation:getVal(t,'operation'),
-               number_type:getVal(t,'number_type'), digit:getVal(t,'digit'), carry:getVal(t,'carry'),
-               remainder:getVal(t,'remainder'), vars:env },
-        userAnswer:'', result:null
-      });
+    const opsChosen=getChecked('op_sel'); if(!opsChosen.length) return false;
+    if(!opsChosen.includes(getVal(t,'operation'))) return false;
+
+    const Ginc=getChecked('grade_inc');
+    if(Ginc.length && !Ginc.includes(String(t.grade))) return false;
+
+    if(getVal(t,'operation')==='加法'){
+      const digs=getChecked('add_dig'); if(digs.length && !digs.includes(getVal(t,'digit'))) return false;
+      const cars=getChecked('add_carry'); if(cars.length && !cars.includes(getVal(t,'carry'))) return false;
     }
-    CURRENT=chosen; renderProblems();
-    const modeName={gradeUnit:'学年×単元', calcType:'計算種別', gradeOnly:'学年のみ'}[mode];
-    summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: ${modeName}</span>`;
+    if(getVal(t,'operation')==='減法'){
+      const digs=getChecked('sub_dig'); if(digs.length && !digs.includes(getVal(t,'digit'))) return false;
+      const bor=getChecked('sub_borrow'); if(bor.length && !bor.includes(getVal(t,'carry'))) return false;
+    }
+    if(getVal(t,'operation')==='乗法'){
+      const forms=getChecked('mul_form'); if(forms.length && !forms.includes(getVal(t,'digit'))) return false;
+      const cars=getChecked('mul_carry'); if(cars.length && !cars.includes(getVal(t,'carry'))) return false;
+    }
+    if(getVal(t,'operation')==='除法'){
+      const forms=getChecked('div_form'); if(forms.length && !forms.includes(getVal(t,'digit'))) return false;
+      const rems=getChecked('div_rem'); if(rems.length && !rems.includes(getVal(t,'remainder'))) return false;
+    }
+    return true;
+  };
+
+  const candidates=ALL.filter(pass);
+  const summary=qs('#summary');
+  if(!candidates.length){ summary.innerHTML='<span class="muted">条件に合うテンプレがありません（フィルタを緩めてください）</span>'; qs('#problems').innerHTML=''; CURRENT=[]; return; }
+
+  const chosen=[];
+  for(let i=0;i<count;i++){
+    const t=candidates[rnd(0,candidates.length-1)];
+    const env=sampleEnv(t.vars); if(!env){ i--; continue; }
+    const text=fillTemplate(t.template,env);
+    const ans=String(evalExpr(t.answer_expr,env));
+    chosen.push({ id:`${t.id}-${Date.now()}-${i}`, qid:t.id, text, answer:ans,
+      meta:{ grade:t.grade, unit:getVal(t,'unit_label')||getVal(t,'unit'), operation:getVal(t,'operation'),
+             number_type:getVal(t,'number_type'), digit:getVal(t,'digit'), carry:getVal(t,'carry'),
+             remainder:getVal(t,'remainder'), vars:env }, userAnswer:'', result:null });
   }
+  CURRENT=chosen; renderProblems();
+  const modeName={gradeUnit:'学年×単元',calcType:'計算種別',gradeOnly:'学年のみ'}[mode];
+  summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: ${modeName}</span>`;
+}
 
-  function renderProblems(){
-    const box=qs('#problems');
-    if(!CURRENT.length){ box.innerHTML='<span class="muted">出題を作成するとここに表示されます。</span>'; return; }
-    box.innerHTML=CURRENT.map((q,i)=>{
-      const pill=q.result===true?'<span class="pill ok">○ 正解</span>':q.result===false?'<span class="pill ng">× 不正解</span>':'<span class="pill">未採点</span>';
-      return `<div class="qrow" data-id="${q.id}">
-        <div>
-          <div><strong>Q${i+1}.</strong> ${q.text}</div>
-          <div class="muted meta-line">[${q.meta.grade}年] ${q.meta.unit}｜${q.meta.operation}/${q.meta.number_type}/${q.meta.digit}/${q.meta.carry}/${q.meta.remainder}</div>
-        </div>
-        <div>
-          <input class="answer" placeholder="答え" value="${q.userAnswer}">
-          <div style="text-align:right;margin-top:6px;">${pill}</div>
-        </div>
-      </div>`;
-    }).join('');
-    qsa('input.answer',box).forEach(inp=>{
-      inp.addEventListener('input',e=>{
-        const id=e.target.closest('.qrow').getAttribute('data-id');
-        const item=CURRENT.find(x=>x.id===id); if(item){ item.userAnswer=e.target.value.trim(); }
-      });
+function renderProblems(){
+  const box=qs('#problems');
+  if(!CURRENT.length){ box.innerHTML='<span class="muted">出題を作成するとここに表示されます。</span>'; return; }
+  box.innerHTML=CURRENT.map((q,i)=>{
+    const pill=q.result===true?'<span class="pill ok">○ 正解</span>':q.result===false?'<span class="pill ng">× 不正解</span>':'<span class="pill">未採点</span>';
+    return `<div class="qrow" data-id="${q.id}">
+      <div><div><strong>Q${i+1}.</strong> ${q.text}</div>
+        <div class="muted meta-line">[${q.meta.grade}年] ${q.meta.unit}｜${q.meta.operation}/${q.meta.number_type}/${q.meta.digit}/${q.meta.carry}/${q.meta.remainder}</div>
+      </div>
+      <div><input class="answer" placeholder="答え" value="${q.userAnswer}">
+        <div style="text-align:right;margin-top:6px;">${pill}</div></div></div>`;
+  }).join('');
+  qsa('input.answer',box).forEach(inp=>{
+    inp.addEventListener('input',e=>{
+      const id=e.target.closest('.qrow').getAttribute('data-id');
+      const item=CURRENT.find(x=>x.id===id); if(item){ item.userAnswer=e.target.value.trim(); }
     });
-  }
-
-  function gradeAll(){
-    let ok=0; CURRENT.forEach(q=>{ const ua=(q.userAnswer||'').trim(); q.result=(ua!=='' && ua==q.answer); if(q.result) ok++; });
-    renderProblems(); alert(`採点：${ok} / ${CURRENT.length} 正解`);
-  }
-  function resetAnswers(){ CURRENT.forEach(q=>{ q.userAnswer=''; q.result=null; }); renderProblems(); }
+  });
+}
+function gradeAll(){ let ok=0; CURRENT.forEach(q=>{const ua=(q.userAnswer||'').trim(); q.result=(ua!=='' && ua==q.answer); if(q.result) ok++;}); renderProblems(); alert(`採点：${ok} / ${CURRENT.length} 正解`); }
+function resetAnswers(){ CURRENT.forEach(q=>{ q.userAnswer=''; q.result=null; }); renderProblems(); }
 </script>
-</body>
-</html>
+</body></html>
