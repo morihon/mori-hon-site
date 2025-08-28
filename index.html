@@ -48,6 +48,14 @@ footer{border-top:1px solid #e5e7eb;background:#fff}
 @media(max-width:900px){.details .grid{grid-template-columns:1fr}}
 .op-sub fieldset,.details fieldset{border:none;outline:2px dotted #cbd5e1;outline-offset:-6px;padding:12px;box-sizing:border-box;width:100%;margin:0}
 .details label.ck span{white-space:normal}
+/* ----- 見出しの文字が見切れないように余白を増やす ----- */
+legend{ padding: 2px 6px; line-height: 1.3; }   /* もともとの legend を上書き */
+.details h3{ margin: 2px 0 10px; line-height: 1.25; }
+
+/* ----- 左の op-item を右パネルの高さに合わせて伸ばすためのクラス ----- */
+.ops-list .op-item{ min-height: 44px; align-items: center; }
+.ops-list .op-item.active.match-height{ align-items: stretch; } /* 高さ同期用 */
+.ops-list .op-item .label-wrap{ display:flex; align-items:center; gap:8px; padding:10px 12px; width:100% }
 </style>
 </head><body>
 <header>
