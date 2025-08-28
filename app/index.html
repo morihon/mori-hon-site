@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>問題出題（仮：入力・採点・保存対応）｜学びの森</title>
+  <title>問題出題（仮：入力・採点・保存＋タグ/履歴）｜学びの森</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body { font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; padding: 40px; background:#f8fafc; }
@@ -25,7 +25,7 @@
 </head>
 <body>
   <div class="wrap">
-    <h1>問題出題（仮：入力・採点・保存対応）</h1>
+    <h1>問題出題（仮：入力・採点・保存）</h1>
     <div id="info" class="box">読み込み中...</div>
 
     <div class="controls">
@@ -43,76 +43,105 @@
   </div>
 
   <script>
-    // ========== 基本情報 ==========
+    // ===== 基本情報（タグをここで定義） =====
     const params = new URLSearchParams(location.search);
     const grade = params.get('grade') || '(未指定)';
     const unit  = params.get('unit')  || 'all';
     const unitLabelMap = { calc:'計算', word:'文章題', geometry:'図形', all:'指定なし' };
     const gradeLabel = `小${grade}`;
     const unitLabel  = unitLabelMap[unit] || unit;
-    const stateKey   = `mnm_state:v1:grade=${grade}:unit=${unit}`; // 端末内保存キー
+
+    // 保存キーをv2に（将来の互換対策）
+    const stateKey   = `mnm_state:v2:grade=${grade}:unit=${unit}`;
 
     document.getElementById('info').textContent =
       `選択：学年＝${gradeLabel}／単元＝${unitLabel}`;
 
-    // ========== 乱数ユーティリティ ==========
+    // ===== 乱数ユーティリティ =====
     const rnd = (min, max) => Math.floor(Math.random()*(max-min+1))+min;
 
-    // ========== 問題テンプレ（仮） ==========
-    // 各関数は { text, answer } を返す
+    // ===== 問題テンプレ（仮）: {text, answer, tags[]} を返す =====
     const pool = {
       calc: [
         g => {
           const a = 45, b = 10*g, c = g;
-          return { text:`${a}＋${b}−${c} を計算しなさい。`, answer: (a+b-c).toString() };
+          return { text:`${a}＋${b}−${c} を計算しなさい。`,
+                   answer:(a+b-c).toString(),
+                   tags:[`学年:${g}`, '単元:計算', '種別:加減混合'] };
         },
         g => {
           const a = g*3, b = 7;
-          return { text:`${a}×${b} を計算しなさい。`, answer: (a*b).toString() };
+          return { text:`${a}×${b} を計算しなさい。`,
+                   answer:(a*b).toString(),
+                   tags:[`学年:${g}`, '単元:計算', '種別:乗算'] };
         },
         g => {
           const a = g*12, b = 3;
-          return { text:`${a}÷${b} の商を求めなさい。`, answer: (a/b).toString() };
+          return { text:`${a}÷${b} の商を求めなさい。`,
+                   answer:(a/b).toString(),
+                   tags:[`学年:${g}`, '単元:計算', '種別:除算'] };
         },
       ],
       word: [
         g => {
           const each = g+2, total = each*3;
           const bags = Math.ceil(total/each);
-          return { text:`りんごを${each}個ずつ袋に入れます。全部で${total}個あるとき、袋はいくつ必要ですか。`, answer: bags.toString() };
+          return { text:`りんごを${each}個ずつ袋に入れます。全部で${total}個あるとき、袋はいくつ必要ですか。`,
+                   answer:bags.toString(),
+                   tags:[`学年:${g}`, '単元:文章題', '場面:個数/等分'] };
         },
         g => {
           const per = g+1, days = g+3, pages = per*days;
-          return { text:`Aさんは毎日${per}ページ読書します。${days}日で何ページ読めますか。`, answer: pages.toString() };
+          return { text:`Aさんは毎日${per}ページ読書します。${days}日で何ページ読めますか。`,
+                   answer:pages.toString(),
+                   tags:[`学年:${g}`, '単元:文章題', '場面:日数×ページ'] };
         },
       ],
       geometry: [
         g => {
           const side = g+3;
-          return { text:`一辺${side}cmの正方形の周の長さを求めなさい。`, answer: (side*4).toString() };
+          return { text:`一辺${side}cmの正方形の周の長さを求めなさい。`,
+                   answer:(side*4).toString(),
+                   tags:[`学年:${g}`, '単元:図形', '図形:正方形', '概念:周'] };
         },
         g => {
           const h = g+2, w = g+4;
-          return { text:`縦${h}cm・横${w}cmの長方形の面積を求めなさい。`, answer: (h*w).toString() };
+          return { text:`縦${h}cm・横${w}cmの長方形の面積を求めなさい。`,
+                   answer:(h*w).toString(),
+                   tags:[`学年:${g}`, '単元:図形', '図形:長方形', '概念:面積'] };
         },
       ],
     };
 
+    // 問題セット生成（タグと一意IDを付与）
     function makeProblemSet(g, u, count=5) {
       const base = pool[u] || [...pool.calc, ...pool.word, ...pool.geometry];
       const out = [];
       for (let i=0;i<count;i++){
         const f = base[rnd(0, base.length-1)];
-        const {text, answer} = f(g);
-        out.push({ id:`q${Date.now()}_${i}_${Math.random().toString(36).slice(2,6)}`, text, answer, userAnswer:'', result:null });
+        const {text, answer, tags} = f(g);
+        out.push({
+          id:`q${Date.now()}_${i}_${Math.random().toString(36).slice(2,6)}`,
+          text, answer,
+          tags,               // ここで問題タグを保存
+          userAnswer:'',      // ユーザー入力
+          result:null,        // true/false/null
+          lastAttemptAt:null  // 最後に採点した時刻（ms）
+        });
       }
       return out;
     }
 
-    // ========== 状態 ==========
+    // ===== 状態（履歴logも別テーブル的に保持） =====
     let state = {
-      meta: { grade, unit, createdAt: Date.now() },
-      problems: [] // {id, text, answer, userAnswer, result}
+      meta: {
+        grade, unit,
+        gradeLabel, unitLabel,
+        createdAt: Date.now(),
+        tags: [ `学年:${grade}`, `単元:${unitLabel}` ]  // セット全体のタグ
+      },
+      problems: [],  // {id, text, answer, tags[], userAnswer, result, lastAttemptAt}
+      log: []        // [{problemId, correct, at, tags[]}]
     };
 
     function save() {
@@ -125,6 +154,13 @@
       try {
         const s = JSON.parse(raw);
         if (s?.meta?.grade === grade && s?.meta?.unit === unit && Array.isArray(s.problems)) {
+          // v1→v2 互換のためのフォールバック
+          s.log = Array.isArray(s.log) ? s.log : [];
+          s.meta.tags = Array.isArray(s.meta.tags) ? s.meta.tags : [ `学年:${grade}`, `単元:${unitLabel}` ];
+          s.problems.forEach(p => {
+            if (!Array.isArray(p.tags)) p.tags = [`学年:${grade}`, `単元:${unitLabel}`];
+            if (!('lastAttemptAt' in p)) p.lastAttemptAt = null;
+          });
           state = s;
           return true;
         }
@@ -135,9 +171,8 @@
       localStorage.removeItem(stateKey);
     }
 
-    // ========== 描画 ==========
+    // ===== 描画 =====
     const problemsEl = document.getElementById('problems');
-
     function render() {
       if (!state.problems.length) {
         problemsEl.innerHTML = `<p class="muted">「新しい問題を生成」を押すと、この学年・単元で5題を作ります。</p>`;
@@ -147,11 +182,12 @@
         const mark = p.result === true ? '<span class="pill ok">○ 正解</span>'
                   : p.result === false ? '<span class="pill ng">× 不正解</span>'
                   : '<span class="pill">未採点</span>';
+        const t = p.lastAttemptAt ? new Date(p.lastAttemptAt).toLocaleString() : '—';
         return `
           <div class="row" data-id="${p.id}">
             <div>
               <div><strong>Q${idx+1}.</strong> ${p.text}</div>
-              <div class="muted">（答え：整数で入力）</div>
+              <div class="muted">（答え：整数で入力） ｜ タグ: ${p.tags.join(' / ')} ｜ 最終採点: ${t}</div>
             </div>
             <div>
               <input class="answer" inputmode="numeric" pattern="[0-9\\-]+" placeholder="答え" value="${p.userAnswer ?? ''}">
@@ -172,19 +208,24 @@
       if (!prob) return;
       prob.userAnswer = e.target.value.trim();
       document.getElementById('saveStatus').textContent = '保存中…';
-      // 軽いデバウンス
       if (save._t) clearTimeout(save._t);
       save._t = setTimeout(save, 300);
     });
 
-    // ========== 採点 ==========
+    // ===== 採点（attemptAt と log 追加） =====
     function gradeAll() {
       let correct = 0;
+      const now = Date.now();
       state.problems.forEach(p => {
         const ua = (p.userAnswer ?? '').trim();
-        if (ua === '') { p.result = false; return; }
-        // いまは単純に数値一致（将来：単位・四捨五入・分数など拡張）
-        p.result = (ua === p.answer);
+        p.result = (ua !== '' && ua === p.answer);
+        p.lastAttemptAt = now;
+        state.log.push({
+          problemId: p.id,
+          correct: p.result,
+          at: now,
+          tags: p.tags.slice() // 問題のタグを記録
+        });
         if (p.result) correct++;
       });
       save();
@@ -192,47 +233,41 @@
       alert(`採点完了：${correct} / ${state.problems.length} 正解`);
     }
 
-    // ========== 初期化 ==========
+    // ===== 初期化 =====
     const has = load();
-    if (!has) {
-      // 初回は問題がないので案内のみ表示
-      render();
-    } else {
-      render();
-    }
+    if (!has) render(); else render();
 
-    // ========== ボタン動作 ==========
+    // ===== ボタン操作 =====
     document.getElementById('gen').addEventListener('click', () => {
       if (state.problems.length > 0) {
         const ok = confirm('現在の問題と入力は上書きされます。新しい問題を作りますか？');
         if (!ok) return;
       }
-      state = { meta:{ grade, unit, createdAt: Date.now() }, problems: makeProblemSet(grade, unit, 5) };
+      state = {
+        meta:{ grade, unit, gradeLabel, unitLabel, createdAt: Date.now(), tags:[ `学年:${grade}`, `単元:${unitLabel}` ] },
+        problems: makeProblemSet(grade, unit, 5),
+        log: []
+      };
       save();
       render();
     });
 
     document.getElementById('gradeBtn').addEventListener('click', gradeAll);
     document.getElementById('print').addEventListener('click', () => window.print());
-
     document.getElementById('reset').addEventListener('click', () => {
       const ok = confirm('この学年・単元の保存データを消します。よろしいですか？');
       if (!ok) return;
       clearState();
-      state = { meta:{ grade, unit, createdAt: Date.now() }, problems: [] };
+      state = { meta:{ grade, unit, gradeLabel, unitLabel, createdAt: Date.now(), tags:[ `学年:${grade}`, `単元:${unitLabel}` ] }, problems: [], log: [] };
       render();
     });
 
-    // ========== ページ離脱の保護 ==========
+    // ===== 離脱保護 =====
     window.addEventListener('beforeunload', (e) => {
-      // 未採点・未入力がある、もしくは直近の変更が保存中なら警告
       const hasUnanswered = state.problems.some(p => (p.userAnswer ?? '') === '');
       const saving = document.getElementById('saveStatus').textContent.includes('保存中');
-      if (hasUnanswered || saving) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
+      if (hasUnanswered || saving) { e.preventDefault(); e.returnValue = ''; }
     });
   </script>
 </body>
-</html>
+</html> 
