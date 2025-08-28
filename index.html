@@ -1,130 +1,380 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>学びの森</title>
-  <style>
-    body {
-      font-family: "Arial", sans-serif;
-      text-align: center;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-    }
+<meta charset="utf-8" />
+<title>学びの森｜ランダム文章題 & 計算</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+:root{
+  --brand:#2563eb; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --bg:#f8fafc; --card:#fff; --accent:#f1f5f9; --brand-weak:#dbeafe
+}
+*{box-sizing:border-box} html,body{margin:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN","Meiryo",sans-serif;background:var(--bg);color:var(--ink)}
+.wrap{max-width:1000px;margin:0 auto;padding:16px 18px}
+h1{margin:10px 0 4px;font-size:clamp(22px,4.5vw,34px);letter-spacing:.02em}
+.lead{margin:0 0 14px;color:var(--muted)}
 
-    h1 {
-      background-color: #4CAF50;
-      color: white;
-      padding: 20px;
-      margin: 0;
-    }
+.topbar{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;cursor:pointer;font-weight:700}
+.pill.active{border-color:var(--brand);background:var(--brand-weak);color:#1e3a8a}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
 
-    .section {
-      margin: 20px auto;
-      padding: 20px;
-      width: 80%;
-      max-width: 600px;
-      background: white;
-      border: 2px solid #4CAF50;
-      border-radius: 10px;
-    }
+.tabs{display:flex;gap:8px;margin-top:10px}
+.tab{flex:1;text-align:center;padding:12px;border:1px solid var(--line);background:#fff;border-radius:12px;cursor:pointer;font-weight:800}
+.tab.active{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
 
-    .mode-title {
-      font-size: 1.4em;
-      margin-bottom: 15px;
-      color: #333;
-    }
+.panels{margin-top:12px}
+.panel{display:none;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+.panel.show{display:block}
+h2{margin:6px 0 10px;font-size:20px}
+.sub{color:var(--muted);margin:0 0 10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{background:var(--brand);color:#fff;border:none;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn.sm{padding:6px 10px;border-radius:10px;font-weight:700}
+select,input[type="number"]{border:1px solid var(--line);border-radius:10px;padding:8px 10px}
 
-    .button-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-    }
+.accordion{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.acc-hd{background:var(--accent);padding:10px 12px;cursor:pointer;font-weight:800}
+.acc-bd{display:none;padding:12px;background:#fff}
+.acc.open .acc-bd{display:block}
 
-    .mode-button {
-      background: #e8f5e9;
-      border: 2px solid #4CAF50;
-      border-radius: 10px;
-      padding: 15px 20px;
-      font-size: 1.1em;
-      cursor: pointer;
-      min-width: 120px;
-      transition: 0.2s;
-    }
+#play{margin-top:14px}
+.q{border-bottom:1px solid var(--line);padding:10px 2px}
+.answer{width:170px;padding:8px 10px;border:1px solid var(--line);border-radius:10px}
+.badge{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:800}
 
-    .mode-button:hover {
-      background: #c8e6c9;
-    }
-
-    /* 学年ボタン */
-    .grade-button {
-      background: #fff;
-      border: 2px solid #2196F3;
-      border-radius: 8px;
-      padding: 10px 15px;
-      cursor: pointer;
-      min-width: 70px;
-      transition: 0.2s;
-    }
-
-    .grade-button:hover {
-      background: #e3f2fd;
-    }
-
-    /* 出題開始ボタン */
-    .start-button {
-      display: block;
-      margin: 20px auto 0 auto;
-      padding: 15px 30px;
-      font-size: 1.2em;
-      border: none;
-      border-radius: 8px;
-      background: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-
-    .start-button:hover {
-      background: #388E3C;
-    }
-  </style>
+/* ←ここより下に“細かな改修”を追記してOK */
+</style>
 </head>
 <body>
-  <h1>学びの森</h1>
+<div class="wrap">
+  <h1>本当に学力がつくドリル。</h1>
+  <p class="lead">文章題は「ここまで習った範囲からランダム」。計算は「横断ランダム」と「単元内ランダム」。</p>
 
-  <!-- 学年選択 -->
-  <div class="section">
-    <div class="mode-title">学年を選んでください</div>
-    <div class="button-container">
-      <button class="grade-button">小1</button>
-      <button class="grade-button">小2</button>
-      <button class="grade-button">小3</button>
-      <button class="grade-button">小4</button>
-      <button class="grade-button">小5</button>
-      <button class="grade-button">小6</button>
+  <!-- 学年ピル（全体設定） -->
+  <div class="topbar">
+    <div class="row" style="justify-content:space-between">
+      <strong>学年を選ぶ</strong>
+      <span class="note">※ ここで選ぶと全モードに適用（各モード内で上書き可）</span>
+    </div>
+    <div id="grade-pills" class="pills" style="margin-top:8px">
+      <span data-g="" class="pill active">未指定</span>
+      <span data-g="1" class="pill">1年</span>
+      <span data-g="2" class="pill">2年</span>
+      <span data-g="3" class="pill">3年</span>
+      <span data-g="4" class="pill">4年</span>
+      <span data-g="5" class="pill">5年</span>
+      <span data-g="6" class="pill">6年</span>
     </div>
   </div>
 
-  <!-- 文章題 -->
-  <div class="section">
-    <div class="mode-title">📘 文章題モード</div>
-    <div class="button-container">
-      <button class="mode-button">ランダム</button>
-      <button class="mode-button">学年別</button>
-      <button class="mode-button">単元別</button>
-    </div>
+  <!-- タブ：文章題 / 計算 -->
+  <div class="tabs">
+    <div id="tab-word" class="tab active">📘 文章題</div>
+    <div id="tab-calc" class="tab">🧮 計算</div>
   </div>
 
-  <!-- 計算 -->
-  <div class="section">
-    <div class="mode-title">🧮 計算モード</div>
-    <div class="button-container">
-      <button class="mode-button">横断ランダム</button>
-      <button class="mode-button">単元内ランダム</button>
-    </div>
+  <div class="panels">
+    <!-- 文章題パネル -->
+    <section id="panel-word" class="panel show">
+      <h2>📘 文章題</h2>
+      <p class="sub">読む力・考える力を育てる、サービスの看板機能。</p>
+
+      <!-- 学年は常時表示 -->
+      <div class="row" style="margin-bottom:8px">
+        <label>学年
+          <select id="grade-word">
+            <option value="">（全体設定を使用：<span id="gg1">未指定</span>）</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+        <label>出題数 <input type="number" id="n-word" value="5" min="1" max="20"></label>
+        <button class="btn" onclick="startWordRandom()">ランダムに出題（おすすめ）</button>
+      </div>
+
+      <!-- 詳細設定：単元など -->
+      <div id="acc-word" class="accordion">
+        <div class="acc-hd" onclick="toggleAcc('acc-word')">詳細設定（単元など）</div>
+        <div class="acc-bd">
+          <div class="row">
+            <label>単元（任意）
+              <select id="unit-word">
+                <option value="">指定なし</option>
+                <option value="MIX">複合</option>
+                <option value="SPEED">速さ</option>
+                <option value="RATE">割合</option>
+                <option value="FRAC">分数</option>
+              </select>
+            </label>
+            <button class="btn sm" onclick="startWordByFilters()">この条件で出題</button>
+          </div>
+          <p class="small">※ 後日、教科書会社ごとの配列にも対応予定。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 計算パネル -->
+    <section id="panel-calc" class="panel">
+      <h2>🧮 計算</h2>
+      <p class="sub">パターンの壁を越えて、必要な練習をまとめてシャッフル。</p>
+
+      <div class="accordion acc open" id="acc-calc-cross">
+        <div class="acc-hd" onclick="toggleAcc('acc-calc-cross')">横断ランダム（これまでの範囲）</div>
+        <div class="acc-bd">
+          <div class="row">
+            <label>学年
+              <select id="grade-calc-cross">
+                <option value="">（全体設定を使用：<span id="gg2">未指定</span>）</option>
+                <option>1</option><option>2</option><option>3</option>
+                <option>4</option><option>5</option><option>6</option>
+              </select>
+            </label>
+            <label>出題数 <input type="number" id="n-calc-cross" value="10" min="1" max="30"></label>
+            <button class="btn sm" onclick="startCalcCross()">出題</button>
+          </div>
+          <p class="small">学年に応じた範囲の計算をランダムに出題します。</p>
+        </div>
+      </div>
+
+      <div class="accordion acc" id="acc-calc-unit" style="margin-top:10px">
+        <div class="acc-hd" onclick="toggleAcc('acc-calc-unit')">単元内ランダム</div>
+        <div class="acc-bd">
+          <div class="row">
+            <label>種別
+              <select id="calc-kind">
+                <option value="add">足し算</option>
+                <option value="sub">引き算</option>
+                <option value="mul">かけ算</option>
+                <option value="div">わり算</option>
+              </select>
+            </label>
+            <span id="calc-options"></span>
+            <label>出題数 <input type="number" id="n-calc-unit" value="10" min="1" max="30"></label>
+            <button class="btn sm" onclick="startCalcUnit()">出題</button>
+          </div>
+          <p class="small">例）わり算の筆算：商の位や余りの有無をまたいでランダムに。</p>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <button class="start-button">出題開始</button>
+  <!-- 出題表示 -->
+  <section id="play" class="panel" style="display:none">
+    <div class="row" style="justify-content:space-between">
+      <div><strong id="mode-label">出題</strong></div>
+      <div class="row">
+        <button class="btn ghost sm" onclick="window.print()">PDF（印刷）</button>
+        <button class="btn ghost sm" onclick="resetAnswers()">回答をリセット</button>
+      </div>
+    </div>
+    <div id="problems"></div>
+  </section>
+
+  <p class="note">※ データは最小セットで動作。後で <code>/app/problems.json</code> に接続可能。</p>
+</div>
+
+<script>
+/* ── 基本UI ───────────────────────────────── */
+function $(q,root=document){ return root.querySelector(q); }
+function $all(q,root=document){ return Array.from(root.querySelectorAll(q)); }
+
+function toggleAcc(id){ const el=document.getElementById(id); el.classList.toggle('open'); }
+
+/* タブ切替 */
+$('#tab-word').addEventListener('click', ()=>{
+  $('#tab-word').classList.add('active'); $('#tab-calc').classList.remove('active');
+  $('#panel-word').classList.add('show'); $('#panel-calc').classList.remove('show');
+});
+$('#tab-calc').addEventListener('click', ()=>{
+  $('#tab-calc').classList.add('active'); $('#tab-word').classList.remove('active');
+  $('#panel-calc').classList.add('show'); $('#panel-word').classList.remove('show');
+});
+
+/* 学年ピル → 全体設定 */
+let GLOBAL_GRADE = '';
+$all('#grade-pills .pill').forEach(p=>{
+  p.addEventListener('click', ()=>{
+    $all('#grade-pills .pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    GLOBAL_GRADE = p.dataset.g || '';
+    syncGlobalGradeHints();
+  });
+});
+function syncGlobalGradeHints(){
+  $('#gg1').textContent = GLOBAL_GRADE || '未指定';
+  $('#gg2').textContent = GLOBAL_GRADE || '未指定';
+}
+syncGlobalGradeHints();
+
+/* ── 文章題（最小データ） ───────────────────── */
+const WORD_POOL = [
+  {id:'Q-02-MIX-010-v1',grade:'2',unit:'MIX',text:'えんぴつが9本。3人に同じ本数ずつわけると1人何本？',answer:'3'},
+  {id:'Q-03-MIX-001-v1',grade:'3',unit:'MIX',text:'りんごが3こあります。さらに4こもらいました。ぜんぶで何こ？',answer:'7'},
+  {id:'Q-03-SPEED-012-v1',grade:'3',unit:'SPEED',text:'家から学校まで1.2km。毎分80mで歩くと何分？',answer:'15'},
+  {id:'Q-04-RATE-021-v1',grade:'4',unit:'RATE',text:'ある数の25%は18です。もとの数はいくつ？',answer:'72'},
+  {id:'Q-03-FRAC-030-v1',grade:'3',unit:'FRAC',text:'みかんを8人で同じ数ずつ分けます。1人分は何こ？',answer:'1'}
+];
+
+/* 共通 */
+const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+function pickN(arr, n){ const src=arr.slice(), out=[]; while(out.length<n && src.length){ out.push(src.splice(rnd(0,src.length-1),1)[0]); } return out; }
+function getGrade(localSelId){ const v = $(localSelId)?.value || ''; return v || GLOBAL_GRADE || ''; }
+
+/* 出題：文章題 */
+function startWordRandom(){
+  const g = getGrade('#grade-word');
+  const n = Math.max(1, Math.min(20, Number($('#n-word').value||5)));
+  let pool = WORD_POOL.slice();
+  if(g) pool = pool.filter(p=>p.grade===g);
+  const pick = pickN(pool, n);
+  showProblems(pick.map(x=>({q:x.text, correct:x.answer, id:x.id})), '📘 文章題｜ランダム');
+}
+function startWordByFilters(){
+  const g = getGrade('#grade-word'); const u = $('#unit-word').value;
+  const n = Math.max(1, Math.min(20, Number($('#n-word').value||5)));
+  let pool = WORD_POOL.slice();
+  if(g) pool = pool.filter(p=>p.grade===g);
+  if(u) pool = pool.filter(p=>p.unit===u);
+  const pick = pickN(pool, n);
+  showProblems(pick.map(x=>({q:x.text, correct:x.answer, id:x.id})), '📘 文章題｜条件出題');
+}
+
+/* ── 計算：横断ランダム / 単元内ランダム ─────────── */
+const CalcScopeByGrade = {
+  '1': { add:true, sub:true, mul:false, div:false },
+  '2': { add:true, sub:true, mul:false, div:false },
+  '3': { add:true, sub:true, mul:true,  div:true  },
+  '4': { add:true, sub:true, mul:true,  div:true  },
+  '5': { add:true, sub:true, mul:true,  div:true  },
+  '6': { add:true, sub:true, mul:true,  div:true  }
+};
+function allowedKindsByGrade(g){
+  if(!g) return ['add','sub','mul','div'];
+  const s = CalcScopeByGrade[g] || CalcScopeByGrade['6'];
+  return Object.entries(s).filter(([,v])=>v).map(([k])=>k);
+}
+function startCalcCross(){
+  const g = getGrade('#grade-calc-cross');
+  const n = Math.max(1, Math.min(30, Number($('#n-calc-cross').value||10)));
+  const kinds = allowedKindsByGrade(g);
+  const out=[]; for(let i=0;i<n;i++){ const k = kinds[rnd(0,kinds.length-1)]; out.push(generateCalc(k, {grade:g, cross:true})); }
+  showProblems(out, `🧮 計算｜横断ランダム${g?`（${g}年まで）`:''}`);
+}
+
+/* 単元内オプションUI */
+const UNIT_OPTION_TEMPLATES = {
+  add(){ return `
+    <label>桁 <select id="opt-digits"><option>1桁</option><option selected>2桁</option><option>3桁</option></select></label>
+    <label>繰り上がり <select id="opt-carry"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `},
+  sub(){ return `
+    <label>桁 <select id="opt-digits"><option>1桁</option><option selected>2桁</option><option>3桁</option></select></label>
+    <label>繰下がり <select id="opt-borrow"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `},
+  mul(){ return `
+    <label>形式 <select id="opt-form"><option>1桁×1桁</option><option selected>2桁×1桁</option><option>2桁×2桁</option></select></label>
+  `},
+  div(){ return `
+    <label>形式 <select id="opt-form"><option selected>2桁÷1桁</option><option>3桁÷1桁</option></select></label>
+    <label>余り <select id="opt-rem"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `}
+};
+function renderUnitOptions(){
+  const kind = $('#calc-kind').value;
+  $('#calc-options').innerHTML = UNIT_OPTION_TEMPLATES[kind]();
+}
+$('#calc-kind').addEventListener('change', renderUnitOptions);
+renderUnitOptions();
+
+function startCalcUnit(){
+  const kind = $('#calc-kind').value;
+  const n = Math.max(1, Math.min(30, Number($('#n-calc-unit').value||10)));
+  const opts = {};
+  if(kind==='add' || kind==='sub'){ opts.digits = $('#opt-digits').value; }
+  if(kind==='add'){ opts.carry = $('#opt-carry').value; }
+  if(kind==='sub'){ opts.borrow = $('#opt-borrow').value; }
+  if(kind==='mul' || kind==='div'){ opts.form = $('#opt-form').value; }
+  if(kind==='div'){ opts.rem = $('#opt-rem').value; }
+  const out=[]; for(let i=0;i<n;i++) out.push(generateCalc(kind, opts));
+  const labelMap = {add:'足し算', sub:'引き算', mul:'かけ算', div:'わり算'};
+  showProblems(out, `🧮 計算｜単元内ランダム（${labelMap[kind]}）`);
+}
+
+/* 計算ジェネレータ（最小） */
+function generateCalc(kind, opts={}){
+  let q='', correct='';
+  if(kind==='add'){
+    const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
+    const base = d==='1桁'?9 : d==='2桁'?99 : 999;
+    let a=rnd(1,base), b=rnd(1,base);
+    if(opts.carry==='あり'){ a=(a-a%10)+rnd(6,9); b=(b-b%10)+rnd(6,9); }
+    if(opts.carry==='なし'){ const da=rnd(1,9), db=rnd(0,9-da); a=(a-a%10)+da; b=(b-b%10)+db; }
+    q = `${a}＋${b} を計算しましょう。`; correct = String(a+b);
+  }
+  if(kind==='sub'){
+    const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
+    const base = d==='1桁'?9 : d==='2桁'?99 : 999;
+    let a=rnd(1,base), b=rnd(1,base); if(a<b){ const t=a;a=b;b=t; }
+    if(opts.borrow==='あり'){ const da=rnd(0,8), db=rnd(da+1,9); a=(a-a%10)+da+10; b=(b-b%10)+db; }
+    if(opts.borrow==='なし'){ const da=rnd(2,9), db=rnd(0,da); a=(a-a%10)+da; b=(b-b%10)+db; }
+    q = `${a}−${b} を計算しましょう。`; correct = String(a-b);
+  }
+  if(kind==='mul'){
+    const form = opts.form||['1桁×1桁','2桁×1桁','2桁×2桁'][rnd(0,2)];
+    let a,b; if(form==='1桁×1桁'){ a=rnd(2,9); b=rnd(2,9); }
+    if(form==='2桁×1桁'){ a=rnd(12,99); b=rnd(2,9); }
+    if(form==='2桁×2桁'){ a=rnd(12,99); b=rnd(12,99); }
+    q = `${a}×${b} を計算しましょう。`; correct = String(a*b);
+  }
+  if(kind==='div'){
+    const form = opts.form||['2桁÷1桁','3桁÷1桁'][rnd(0,1)];
+    let a,b; if(form==='2桁÷1桁'){ b=rnd(2,9); const qv=rnd(2,9); a=b*qv + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*qv; }
+    if(form==='3桁÷1桁'){ b=rnd(2,9); const qv=rnd(10,99); a=b*qv + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*qv; }
+    const qv = Math.floor(a/b), r = a%b; q = `${a}÷${b} を計算しましょう。`; correct = r? `${qv}あまり${r}` : String(qv);
+  }
+  return {id:`GEN-${kind}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, q, correct};
+}
+
+/* 出題表示・採点 */
+let CURRENT=[];
+function norm(s){ return String(s||'').trim().replace(/\s+/g,''); }
+function showProblems(items, label){
+  CURRENT = items.map(p => ({...p, answer:null, ok:null}));
+  $('#mode-label').textContent = label;
+  $('#play').style.display='block';
+  renderProblems();
+}
+function renderProblems(){
+  const box = $('#problems');
+  if(!CURRENT.length){ box.innerHTML='<div class="note">まだ問題がありません。</div>'; return; }
+  box.innerHTML = CURRENT.map((it,i)=>`
+    <div class="q">
+      <div><strong>${i+1}. ${it.q}</strong></div>
+      <div class="row" style="margin-top:6px">
+        <input class="answer" placeholder="こたえ" data-i="${i}">
+        <button class="btn sm ghost" onclick="gradeOne(${i})">判定</button>
+        <span id="r${i}" class="small"></span>
+      </div>
+    </div>
+  `).join('');
+  $all('.answer').forEach(inp=>{
+    inp.addEventListener('keydown',e=>{ if(e.key==='Enter') gradeOne(Number(inp.dataset.i)); });
+  });
+}
+function gradeOne(i){
+  const inp = document.querySelector(`.answer[data-i="${i}"]`); const a = norm(inp.value);
+  const corr = norm(CURRENT[i].correct || CURRENT[i].answer);
+  const ok = (a===corr) || (a===String(Number(corr)));
+  CURRENT[i].ok = ok;
+  const el = document.getElementById('r'+i);
+  el.textContent = ok? '◯ 正解！':'× もう一度';
+  el.style.color = ok? '#16a34a':'#dc2626';
+}
+function resetAnswers(){ CURRENT.forEach(x=>{x.answer=null;x.ok=null}); renderProblems(); alert('回答をリセットしました'); }
+</script>
 </body>
 </html>
