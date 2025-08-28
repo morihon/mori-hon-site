@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>学びの森｜本当に学力がつくドリル</title>
-<meta name="description" content="学年・単元・計算種別から出題。変数テンプレで毎回ユニーク。将来的には正誤履歴で出題を自動調整。">
+<meta name="description" content="学年・単元・計算種別から文章題をランダム生成。将来的に正誤履歴で最適化。">
 <style>
   :root{ --brand:#2563eb; }
   *{ box-sizing:border-box; }
@@ -15,23 +15,19 @@
   .nav{ display:flex; align-items:center; justify-content:space-between; gap:16px; padding:10px 0; }
   .logo{ display:flex; align-items:center; gap:10px; font-weight:700; }
   .logo-mark{ width:28px; height:28px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; display:inline-grid; place-items:center; font-size:14px; }
-  .cta{ display:flex; gap:10px; }
   .btn{ appearance:none; border:1px solid #cbd5e1; background:#fff; color:#111827; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
   .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
   .hero{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:28px; align-items:center; padding:30px 0 10px; }
   .hero h1{ margin:0 0 10px; font-size: clamp(26px,4vw,40px); line-height:1.1; }
   .hero p{ margin:0 0 14px; color:#374151; font-size:clamp(15px,2vw,18px); }
-  .hero .badges{ display:flex; gap:8px; flex-wrap:wrap; margin:8px 0 16px; }
-  .badge{ font-size:12px; padding:3px 8px; border:1px solid #cbd5e1; border-radius:999px; background:#fff; }
   .panel{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.04); }
   .section{ padding:40px 0; }
   .muted{ color:#6b7280; }
-  .grid{ display:grid; gap:16px; }
-  .grid.cols-3{ grid-template-columns: repeat(3,minmax(0,1fr)); }
-  fieldset{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; }
+  fieldset{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; min-width:0; }
   legend{ padding:0 6px; color:#374151; }
   .row{ display:flex; flex-wrap:wrap; gap:10px 22px; }
   label.ck{ display:inline-flex; align-items:center; gap:8px; }
+  label.ck span{ white-space:nowrap; } /* 日本語の1文字改行防止 */
   .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:10px; }
   input[type="number"]{ width:90px; padding:8px; border:1px solid #cbd5e1; border-radius:10px; }
   .box{ background:#f1f5f9; border-radius:12px; padding:12px; }
@@ -44,48 +40,36 @@
   .ok{ border-color:#16a34a; color:#166534; background:#ecfdf5; }
   .ng{ border-color:#dc2626; color:#991b1b; background:#fef2f2; }
   footer{ border-top:1px solid #e5e7eb; background:#fff; }
-  @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } .grid.cols-3{ grid-template-columns: 1fr; } }
-  /* 出題下タグは非表示 */
+  @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } }
+
+  /* 出題下メタタグは非表示 */
   .meta-line{ display:none; }
 
-  /* --- 計算ごとのインライン細目（今回の追加） --- */
-  .op-block{ border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; background:#fff; }
+  /* 計算種別カード（大きめ2カラム） */
+  .calc-ops{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
+    gap:16px;
+  }
+  @media (max-width: 900px){ .calc-ops{ grid-template-columns: 1fr; } }
+
+  .op-block{ border:1px solid #e5e7eb; border-radius:10px; padding:10px 12px; background:#fff; min-width:0; overflow:hidden; }
   .op-head{ display:flex; align-items:center; gap:8px; }
   .op-label{ font-weight:600; }
   .op-sub{ margin-top:10px; display:none; }
   .op-block.active .op-sub{ display:block; }
-  .op-sub .row{ gap:10px 20px; }
-  .op-sub fieldset{ border:1px dashed #e5e7eb; }
-  /* === レイアウト崩れ対策パッチ === */
 
-/* ラベルの日本語が1文字ずつ改行されないように */
-label.ck span{ white-space: nowrap; }
-
-/* カラムを広めに＆画面幅に応じて 3→2→1 カラムへ */
-.grid.cols-3{ grid-template-columns: repeat(3, minmax(260px, 1fr)); }
-@media (max-width: 1100px){
-  .grid.cols-3{ grid-template-columns: repeat(2, minmax(260px, 1fr)); }
-}
-@media (max-width: 700px){
-  .grid.cols-3{ grid-template-columns: 1fr; }
-}
-
-/* 計算種別の細目は少し広めに（fieldset 群） */
-.op-sub .grid.cols-3{ grid-template-columns: repeat(2, minmax(260px, 1fr)); }
-@media (max-width: 700px){
-  .op-sub .grid.cols-3{ grid-template-columns: 1fr; }
-}
-
-/* 細かな余白調整（詰まり防止） */
-.op-sub .row{ gap: 8px 16px; }
-fieldset{ min-width: 0; }
+  /* 細目の中のグリッド（広め2列、狭幅なら自動で1列） */
+  .calc-ops .op-sub .grid{ display:grid; grid-template-columns: repeat(2, minmax(220px, 1fr)); gap:12px; }
+  @media (max-width: 700px){ .calc-ops .op-sub .grid{ grid-template-columns: 1fr; } }
+  .op-sub fieldset{ width:100%; min-width:0; border:1px dashed #e5e7eb; }
 </style>
 </head>
 <body>
 <header>
   <div class="container nav">
     <div class="logo"><span class="logo-mark">森</span> 学びの森</div>
-    <div class="cta">
+    <div>
       <a class="btn" href="#how">しくみ</a>
       <a class="btn primary" href="#try">今すぐ出題</a>
     </div>
@@ -93,24 +77,13 @@ fieldset{ min-width: 0; }
   <div class="container hero">
     <div>
       <h1>本当に学力がつくドリル。</h1>
-      <p>学年・単元・計算種別から最適な文章題を毎回ランダム生成。<br>将来的には正誤履歴で出題を自動調整します。</p>
-      <div class="badges">
-        <span class="badge">文章題テンプレ × 変数展開</span>
-        <span class="badge">学年/単元 指定</span>
-        <span class="badge">計算種別フィルタ</span>
-        <span class="badge">PDF印刷OK</span>
-      </div>
+      <p>学年・単元・計算種別から最適な文章題を毎回ランダム生成。将来的には正誤履歴で出題を自動調整します。</p>
       <a class="btn primary" href="#try">条件を選んで出題</a>
       <a class="btn" href="/app/select.html">従来UI</a>
     </div>
     <div class="panel" style="padding:16px;">
       <div class="muted" style="font-size:14px;">プレビュー</div>
-      <div style="padding:8px 0;">
-        <div class="chip">学年を選択</div>
-        <div class="chip">単元を選択</div>
-        <div class="chip">計算種別で絞り込み</div>
-      </div>
-      <div class="muted" style="font-size:13px;">※ この下に本番の選択UIがあります</div>
+      <div class="muted" style="font-size:13px;">この下に本番の選択UIがあります</div>
     </div>
   </div>
 </header>
@@ -121,7 +94,7 @@ fieldset{ min-width: 0; }
     <p class="muted" id="status">読み込み中…（/app/problems.json を参照）</p>
 
     <div class="panel" style="padding:16px; margin-top:10px;">
-      <!-- モード選択 -->
+      <!-- モード -->
       <fieldset>
         <legend>出題モード</legend>
         <div class="row">
@@ -131,8 +104,8 @@ fieldset{ min-width: 0; }
         </div>
       </fieldset>
 
-      <!-- ここにモード連動の項目を描画 -->
-      <div id="panels" class="grid cols-3" style="margin-top:10px;"></div>
+      <!-- ここにモード連動の項目 -->
+      <div id="panels" style="margin-top:10px;"></div>
 
       <div class="controls">
         <label>出題数 <input id="count" type="number" min="1" max="30" value="5"></label>
@@ -173,7 +146,7 @@ fieldset{ min-width: 0; }
 
   // ========= データ読み込み =========
   let ALL=[], CURRENT=[];
-  let VALUES={grades:[], units:[], ops:['加法','減法','乗法','除法'], numt:[], digits:[], carries:[], rems:[]};
+  let VALUES={grades:[], units:[], ops:['加法','減法','乗法','除法']};
 
   fetch('/app/problems.json').then(r=>r.json()).then(json=>{
     ALL=json; collectValues(); initUI();
@@ -188,11 +161,7 @@ fieldset{ min-width: 0; }
     const units  = uniq(ALL.map(x=>x.unit_label||x.unit||'').filter(Boolean)).sort();
     const D_GRADES=['1','2','3','4','5','6'];
     const D_UNITS=['計算/加法','計算/減法','計算/乗法','計算/除法','文章題/等分け','文章題/単価と個数'];
-    VALUES = {
-      grades: grades.length?grades:D_GRADES,
-      units:  units.length?units:D_UNITS,
-      ops:    ['加法','減法','乗法','除法']
-    };
+    VALUES = { grades: grades.length?grades:D_GRADES, units: units.length?units:D_UNITS, ops:['加法','減法','乗法','除法'] };
   }
 
   // ========= 変数展開 =========
@@ -201,7 +170,8 @@ fieldset{ min-width: 0; }
     const parts=(spec||'').split(';').map(s=>s.trim()).filter(Boolean);
     for(let t=0;t<maxTry;t++){
       const env={};
-      parts.forEach(p=>{ const [k,v]=(p.split(':').map(s=>s.trim())); if(!k||!v) return; const m=v.match(/^(-?\d+)\.\.(-?\d+)$/); if(m) env[k]=Math.floor(Math.random()*(Number(m[2])-Number(m[1])+1))+Number(m[1]); });
+      parts.forEach(p=>{ const [k,v]=(p.split(':').map(s=>s.trim())); if(!k||!v) return;
+        const m=v.match(/^(-?\d+)\.\.(-?\d+)$/); if(m) env[k]=Math.floor(Math.random()*(Number(m[2])-Number(m[1])+1))+Number(m[1]); });
       parts.forEach(p=>{ const [k,v]=(p.split(':').map(s=>s.trim())); if(!k||!v) return; if(!/\.{2}/.test(v) && k!=='ensure'){ env[k]=evalExpr(v,env); }});
       const en=parts.find(p=>p.startsWith('ensure')); if(en){ const cond=en.split(':')[1].trim(); if(!evalExpr(cond,env)) continue; }
       return env;
@@ -231,10 +201,9 @@ fieldset{ min-width: 0; }
     }); fs.appendChild(row); return fs;
   }
 
-  // 計算種別：各チェックの直下に細目を表示
+  // 計算種別：各チェックの直下に細目を表示（カード大きめ）
   function renderCalcSubPanels(container){
     container.innerHTML='';
-
     const makeOpBlock=(opName, makeSubs)=>{
       const block=document.createElement('div'); block.className='op-block';
       const head=document.createElement('div'); head.className='op-head';
@@ -244,9 +213,9 @@ fieldset{ min-width: 0; }
           <span class="op-label">${opName}</span>
         </label>`;
       const sub=document.createElement('div'); sub.className='op-sub';
-      const grid=document.createElement('div'); grid.className='grid cols-3';
+      const grid=document.createElement('div'); grid.className='grid';
 
-      makeSubs(grid); // 細目を埋める
+      makeSubs(grid);
       // 共通で学年制約（任意）
       grid.appendChild(fieldset('学年（任意で制約）','grade_inc',VALUES.grades));
       grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
@@ -258,10 +227,10 @@ fieldset{ min-width: 0; }
       return block;
     };
 
-    const wrap=document.createElement('div'); wrap.className='grid cols-3';
+    const wrap=document.createElement('div'); wrap.className='calc-ops';
     wrap.appendChild(makeOpBlock('加法', (g)=>{
       g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁']));
-      g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問']));
+      g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問'])); // 追加
     }));
     wrap.appendChild(makeOpBlock('減法', (g)=>{
       g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁']));
@@ -285,15 +254,23 @@ fieldset{ min-width: 0; }
     const mode=getMode();
 
     if (mode==='gradeUnit'){
-      panels.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
-      panels.appendChild(fieldset('単元（含む）','unit_inc',VALUES.units));
-      panels.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-      panels.appendChild(fieldset('単元（除外）','unit_exc',VALUES.units));
+      const grid=document.createElement('div');
+      grid.style.display='grid'; grid.style.gap='16px';
+      grid.style.gridTemplateColumns='repeat(2, minmax(300px, 1fr))';
+      grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
+      grid.appendChild(fieldset('単元（含む）','unit_inc',VALUES.units));
+      grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+      grid.appendChild(fieldset('単元（除外）','unit_exc',VALUES.units));
+      panels.appendChild(grid);
     } else if (mode==='calcType'){
       renderCalcSubPanels(panels);
     } else if (mode==='gradeOnly'){
-      panels.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
-      panels.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+      const grid=document.createElement('div');
+      grid.style.display='grid'; grid.style.gap='16px';
+      grid.style.gridTemplateColumns='repeat(2, minmax(300px, 1fr))';
+      grid.appendChild(fieldset('学年（含む）','grade_inc',VALUES.grades));
+      grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
+      panels.appendChild(grid);
     }
   }
 
@@ -374,7 +351,8 @@ fieldset{ min-width: 0; }
       });
     }
     CURRENT=chosen; renderProblems();
-    summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: ${({gradeUnit:'学年×単元',calcType:'計算種別',gradeOnly:'学年のみ'})[mode]}</span>`;
+    const modeName={gradeUnit:'学年×単元', calcType:'計算種別', gradeOnly:'学年のみ'}[mode];
+    summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: ${modeName}</span>`;
   }
 
   function renderProblems(){
