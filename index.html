@@ -16,7 +16,7 @@
   .logo{ display:flex; align-items:center; gap:10px; font-weight:700; }
   .logo-mark{ width:28px; height:28px; border-radius:6px; border:1px solid #cbd5e1; background:#fff; display:inline-grid; place-items:center; font-size:14px; }
   .cta{ display:flex; gap:10px; }
-  .btn{ appearance:none; border:1px solid #cbd5e1; background:#fff; color:#111827; padding:10px 14px; border-radius:10px; font-weight:600; }
+  .btn{ appearance:none; border:1px solid #cbd5e1; background:#fff; color:#111827; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; }
   .btn.primary{ background:var(--brand); border-color:var(--brand); color:#fff; }
   .hero{ display:grid; grid-template-columns: 1.1fr 0.9fr; gap:28px; align-items:center; padding:30px 0 10px; }
   .hero h1{ margin:0 0 10px; font-size: clamp(26px,4vw,40px); line-height:1.1; }
@@ -26,7 +26,6 @@
   .panel{ background:#fff; border:1px solid #e5e7eb; border-radius:16px; box-shadow:0 8px 24px rgba(0,0,0,.04); }
   .section{ padding:40px 0; }
   .muted{ color:#6b7280; }
-  /* === 選択UIの最低限スタイル === */
   .grid{ display:grid; gap:16px; }
   .grid.cols-3{ grid-template-columns: repeat(3,minmax(0,1fr)); }
   fieldset{ border:1px solid #e5e7eb; border-radius:12px; padding:12px; }
@@ -60,8 +59,7 @@
   <div class="container hero">
     <div>
       <h1>本当に学力がつくドリル。</h1>
-      <p>学年・単元・計算種別から最適な文章題を毎回ランダム生成。<br>
-      将来的には正誤履歴で出題を自動調整します。</p>
+      <p>学年・単元・計算種別から最適な文章題を毎回ランダム生成。<br>将来的には正誤履歴で出題を自動調整します。</p>
       <div class="badges">
         <span class="badge">文章題テンプレ × 変数展開</span>
         <span class="badge">学年/単元 指定</span>
@@ -88,7 +86,6 @@
     <h2 style="margin:0 0 8px;">出題条件の選択</h2>
     <p class="muted" id="status">読み込み中…（/app/problems.json を参照）</p>
 
-    <!-- 選択UI -->
     <div class="panel" style="padding:16px; margin-top:10px;">
       <fieldset>
         <legend>出題モード</legend>
@@ -98,7 +95,6 @@
           <label class="ck"><input type="radio" name="mode" value="gradeOnly"> 学年のみで指定</label>
         </div>
       </fieldset>
-
       <div id="panels" class="grid cols-3" style="margin-top:10px;"></div>
 
       <div class="controls">
@@ -118,8 +114,7 @@
 <section class="section" id="how">
   <div class="container">
     <h2 style="margin:0 0 8px;">しくみ</h2>
-    <p class="muted">テンプレ（Templates）で文章問題を設計し、変数をランダムに展開。<br>
-    出題条件でフィルタした候補からユニークな問題を生成します。将来は正誤履歴と紐づけて最適化予定。</p>
+    <p class="muted">テンプレ（Templates）で文章問題を設計し、変数をランダムに展開。出題条件でフィルタした候補からユニークな問題を生成します。将来は正誤履歴と紐づけて最適化予定。</p>
   </div>
 </section>
 
@@ -131,11 +126,10 @@
 </footer>
 
 <script>
-  // -------------- 汎用 --------------
   const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const uniq=a=>[...new Set(a)];
-  let ALL=[]; let CURRENT=[];
-  // 読み込み
+  let ALL=[], CURRENT=[];
+
   fetch('/app/problems.json').then(r=>r.json()).then(json=>{
     ALL=json; initUI();
     document.getElementById('status').textContent=`読み込み完了：テンプレ ${ALL.length} 件`;
@@ -144,7 +138,6 @@
     console.error(e);
   });
 
-  // -------------- 変数展開 --------------
   const evalExpr=(expr,env)=>{ const safe=expr.replace(/[a-zA-Z_][a-zA-Z0-9_]*/g,m=>(m in env?String(env[m]):m)); return eval(safe); };
   const sampleEnv=(spec,maxTry=100)=>{
     const parts=(spec||'').split(';').map(s=>s.trim()).filter(Boolean);
@@ -158,7 +151,6 @@
   };
   const fillTemplate=(tpl,env)=>tpl.replace(/{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}/g,(_,k)=>env[k]);
 
-  // -------------- UI生成 --------------
   function initUI(){
     const grades=uniq(ALL.map(x=>String(x.grade))).sort();
     const units =uniq(ALL.map(x=>x.unit_label||x.unit||'').filter(Boolean)).sort();
@@ -190,8 +182,7 @@
     document.getElementById('resetBtn').addEventListener('click', resetAnswers);
   }
   function panel(title,key,values){
-    const fs=document.createElement('fieldset');
-    fs.innerHTML=`<legend>${title}</legend>`;
+    const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
     const row=document.createElement('div'); row.className='row';
     values.forEach(v=>{
       const id=key+'__'+(v||'_');
@@ -205,7 +196,6 @@
   const getMode=()=>document.querySelector('input[name="mode"]:checked').value;
   const getChecked=(prefix)=>[...document.querySelectorAll('input[type="checkbox"][data-key^="'+prefix+'"]:checked')].map(el=>el.value);
 
-  // -------------- 出題 --------------
   function generate(){
     const mode=getMode();
     const count=Math.max(1,Math.min(30,Number(document.getElementById('count').value)||5));
@@ -297,7 +287,6 @@
     renderProblems(); alert(`採点：${ok} / ${CURRENT.length} 正解`);
   }
   function resetAnswers(){ CURRENT.forEach(q=>{ q.userAnswer=''; q.result=null; }); renderProblems(); }
-
 </script>
 </body>
 </html>
