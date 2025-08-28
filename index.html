@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>学びの森｜本当に学力がつくドリル</title>
-<meta name="description" content="学年・単元・計算種別から出題。変数テンプレで毎回ユニーク。将来的には正誤履歴で出題を自動調整。">
+<meta name="description" content="学年・単元・計算種別から出題。変数テンプレで毎回ユニーク。将来は正誤履歴で出題を自動調整。">
 <style>
   :root{ --brand:#2563eb; }
   *{ box-sizing:border-box; }
@@ -45,6 +45,8 @@
   .ng{ border-color:#dc2626; color:#991b1b; background:#fef2f2; }
   footer{ border-top:1px solid #e5e7eb; background:#fff; }
   @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } .grid.cols-3{ grid-template-columns: 1fr; } }
+  /* 出題下のタグは非表示 */
+  .meta-line{ display:none; }
 </style>
 </head>
 <body>
@@ -97,7 +99,7 @@
         </div>
       </fieldset>
 
-      <!-- ここにモードに応じた項目を描画 -->
+      <!-- モードに応じた項目 -->
       <div id="panels" class="grid cols-3" style="margin-top:10px;"></div>
 
       <div class="controls">
@@ -133,52 +135,51 @@
   const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
   const uniq=a=>[...new Set(a)];
   const getMode=()=>document.querySelector('input[name="mode"]:checked').value;
-  const getChecked=(prefix)=>[...document.querySelectorAll('input[type="checkbox"][data-key^="'+prefix+'"]:checked')].map(el=>el.value);
+  const qs=(s,el=document)=>el.querySelector(s);
+  const qsa=(s,el=document)=>[...el.querySelectorAll(s)];
+  const getChecked=(prefix)=>qsa('input[type="checkbox"][data-key^="'+prefix+'"]:checked').map(el=>el.value);
 
   // ========= データ読み込み =========
   let ALL=[], CURRENT=[];
-  let VALUES={grades:[], units:[], ops:[], numt:[], digits:[], carries:[], rems:[]};
+  let VALUES={grades:[], units:[], ops:['加法','減法','乗法','除法'], numt:[], digits:[], carries:[], rems:[]};
 
   fetch('/app/problems.json').then(r=>r.json()).then(json=>{
     ALL=json;
     collectValues();
     initUI();
-    document.getElementById('status').textContent=`読み込み完了：テンプレ ${ALL.length} 件`;
+    qs('#status').textContent=`読み込み完了：テンプレ ${ALL.length} 件`;
   }).catch(e=>{
-    document.getElementById('status').textContent='読み込みエラー（/app/problems.json を配置してください）';
+    qs('#status').textContent='読み込みエラー（/app/problems.json を配置してください）';
     console.error(e);
-    // ダミーデータでもUIは出す
+    // UIは出す
     collectValues(true);
     initUI();
   });
 
-  // 値集合を抽出（なければダミーを補完）
+  // 値集合抽出（無ければダミー補完）
   function collectValues(useDummy=false){
     const grades = uniq(ALL.map(x=>String(x.grade))).sort();
     const units  = uniq(ALL.map(x=>x.unit_label||x.unit||'').filter(Boolean)).sort();
-    const ops    = uniq(ALL.map(x=>x.operation||'').filter(Boolean)).sort();
     const numt   = uniq(ALL.map(x=>x.number_type||'').filter(Boolean)).sort();
     const digits = uniq(ALL.map(x=>x.digit||'').filter(Boolean)).sort();
     const carries= uniq(ALL.map(x=>x.carry||'').filter(Boolean)).sort();
     const rems   = uniq(ALL.map(x=>x.remainder||'').filter(Boolean)).sort();
 
-    // ダミー補完（ご希望どおり“でっち上げ”OK）
-    const D_GRADES = ['1','2','3','4','5','6'];
-    const D_UNITS  = ['計算/加法','計算/減法','計算/乗法','計算/除法','文章題/等分け','文章題/単価と個数'];
-    const D_OPS    = ['加法','減法','乗法','除法'];
-    const D_NUMT   = ['整数','小数','分数'];
-    const D_DIGITS = ['1桁','2桁','3桁','2桁×1桁','小数1位'];
-    const D_CARR   = ['繰り上がりあり','繰下がりあり','なし','不問'];
-    const D_REMS   = ['あり','なし','不問'];
+    const D_GRADES=['1','2','3','4','5','6'];
+    const D_UNITS=['計算/加法','計算/減法','計算/乗法','計算/除法','文章題/等分け','文章題/単価と個数'];
+    const D_NUMT=['整数','小数','分数'];
+    const D_DIGITS=['1桁','2桁','3桁','2桁×1桁','2桁×2桁','3桁÷1桁','2桁÷2桁'];
+    const D_CARR=['繰り上がりあり','繰下がりあり','なし','不問'];
+    const D_REMS=['あり','なし','不問'];
 
     VALUES = {
-      grades: grades.length?grades: D_GRADES,
-      units:  units.length?units:   D_UNITS,
-      ops:    ops.length?ops:       D_OPS,
-      numt:   numt.length?numt:     D_NUMT,
-      digits: digits.length?digits: D_DIGITS,
+      grades: grades.length?grades:D_GRADES,
+      units:  units.length?units:D_UNITS,
+      ops:    ['加法','減法','乗法','除法'],
+      numt:   numt.length?numt:D_NUMT,
+      digits: digits.length?digits:D_DIGITS,
       carries:carries.length?carries:D_CARR,
-      rems:   rems.length?rems:     D_REMS
+      rems:   rems.length?rems:D_REMS
     };
   }
 
@@ -196,58 +197,87 @@
   };
   const fillTemplate=(tpl,env)=>tpl.replace(/{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}/g,(_,k)=>env[k]);
 
-  // ========= UI構築（モードでパネル切替） =========
+  // ========= UI構築 =========
   function initUI(){
-    // モード切替で都度パネル再生成
-    document.querySelectorAll('input[name="mode"]').forEach(r=>{
-      r.addEventListener('change', ()=> renderPanels());
-    });
-    document.getElementById('gen').addEventListener('click', generate);
-    document.getElementById('gradeBtn').addEventListener('click', gradeAll);
-    document.getElementById('printBtn').addEventListener('click', ()=>window.print());
-    document.getElementById('resetBtn').addEventListener('click', resetAnswers);
+    // ラジオ切替
+    qsa('input[name="mode"]').forEach(r=>r.addEventListener('change', renderPanels));
+    // ボタン
+    qs('#gen').addEventListener('click', generate);
+    qs('#gradeBtn').addEventListener('click', gradeAll);
+    qs('#printBtn').addEventListener('click', ()=>window.print());
+    qs('#resetBtn').addEventListener('click', resetAnswers);
 
-    renderPanels(); // 初期描画
+    renderPanels();
   }
 
-  function renderPanels(){
-    const panels=document.getElementById('panels');
-    panels.innerHTML='';
+  // 小ヘルパ：チェック群パネル
+  function panel(title,key,values){
+    const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
+    const row=document.createElement('div'); row.className='row';
+    values.forEach(v=>{
+      const id=key+'__'+(v||'_');
+      const lab=document.createElement('label'); lab.className='ck';
+      lab.innerHTML=`<input type="checkbox" id="${id}" data-key="${key}" value="${v}"><span>${v||'(未設定)'}</span>`;
+      row.appendChild(lab);
+    }); fs.appendChild(row); return fs;
+  }
 
-    const mode=getMode();
-    // 小ヘルパ
-    const panel=(title,key,values)=>{
-      const fs=document.createElement('fieldset'); fs.innerHTML=`<legend>${title}</legend>`;
-      const row=document.createElement('div'); row.className='row';
-      values.forEach(v=>{
-        const id=key+'__'+(v||'_');
-        const lab=document.createElement('label'); lab.className='ck';
-        lab.innerHTML=`<input type="checkbox" id="${id}" data-key="${key}" value="${v}"><span>${v||'(未設定)'}</span>`;
-        row.appendChild(lab);
-      });
-      fs.appendChild(row); return fs;
+  // 計算種別の細目パネル生成
+  function renderCalcSubPanels(container){
+    // 操作選択
+    const opsFS = panel('計算の種類（複数可）','op_sel',['加法','減法','乗法','除法']);
+    container.appendChild(opsFS);
+
+    // 細目コンテナ
+    const sub = document.createElement('div'); sub.className='grid cols-3'; sub.id='calc-subpanels';
+    container.appendChild(sub);
+
+    const makeAdd = ()=>[
+      panel('たし算：桁','add_dig',['1桁','2桁','3桁']),
+      panel('たし算：繰り上がり','add_carry',['繰り上がりあり','なし','不問'])
+    ];
+    const makeSub = ()=>[
+      panel('ひき算：桁','sub_dig',['1桁','2桁','3桁']),
+      panel('ひき算：繰下がり','sub_borrow',['繰下がりあり','なし','不問'])
+    ];
+    const makeMul = ()=>[
+      panel('かけ算：形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁']),
+      panel('かけ算：繰り上がり','mul_carry',['繰り上がりあり','なし','不問'])
+    ];
+    const makeDiv = ()=>[
+      panel('わり算：形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁']),
+      panel('わり算：余り','div_rem',['あり','なし','不問'])
+    ];
+
+    // 選択に応じて細目を出し入れ
+    const refreshSub = ()=>{
+      sub.innerHTML='';
+      const chosen = getChecked('op_sel');
+      if (chosen.includes('加法')) makeAdd().forEach(fs=>sub.appendChild(fs));
+      if (chosen.includes('減法')) makeSub().forEach(fs=>sub.appendChild(fs));
+      if (chosen.includes('乗法')) makeMul().forEach(fs=>sub.appendChild(fs));
+      if (chosen.includes('除法')) makeDiv().forEach(fs=>sub.appendChild(fs));
+      // 任意：学年の制約も併記（必要なら）
+      sub.appendChild(panel('学年（任意で制約）','grade_inc',VALUES.grades));
+      sub.appendChild(panel('学年（除外）','grade_exc',VALUES.grades));
     };
+    // 初期＋イベント
+    refreshSub();
+    qsa('input[data-key^="op_sel"]').forEach(el=>el.addEventListener('change', refreshSub));
+  }
 
-    // モードごとに必要項目だけ出す
+  // モード別パネル描画
+  function renderPanels(){
+    const panels=qs('#panels'); panels.innerHTML='';
+    const mode=getMode();
+
     if (mode==='gradeUnit'){
       panels.appendChild(panel('学年（含む）','grade_inc',VALUES.grades));
       panels.appendChild(panel('単元（含む）','unit_inc',VALUES.units));
       panels.appendChild(panel('学年（除外）','grade_exc',VALUES.grades));
       panels.appendChild(panel('単元（除外）','unit_exc',VALUES.units));
     } else if (mode==='calcType'){
-      panels.appendChild(panel('演算（含む）','op_inc',VALUES.ops));
-      panels.appendChild(panel('数の型（含む）','num_inc',VALUES.numt));
-      panels.appendChild(panel('桁（含む）','dig_inc',VALUES.digits));
-      panels.appendChild(panel('繰上/繰下（含む）','car_inc',VALUES.carries));
-      panels.appendChild(panel('余り（含む）','rem_inc',VALUES.rems));
-      panels.appendChild(panel('演算（除外）','op_exc',VALUES.ops));
-      panels.appendChild(panel('数の型（除外）','num_exc',VALUES.numt));
-      panels.appendChild(panel('桁（除外）','dig_exc',VALUES.digits));
-      panels.appendChild(panel('繰上/繰下（除外）','car_exc',VALUES.carries));
-      panels.appendChild(panel('余り（除外）','rem_exc',VALUES.rems));
-      // 任意で学年制約も出したい場合は下の2行を生かす
-      panels.appendChild(panel('学年（含む・任意）','grade_inc',VALUES.grades));
-      panels.appendChild(panel('学年（除外・任意）','grade_exc',VALUES.grades));
+      renderCalcSubPanels(panels);
     } else if (mode==='gradeOnly'){
       panels.appendChild(panel('学年（含む）','grade_inc',VALUES.grades));
       panels.appendChild(panel('学年（除外）','grade_exc',VALUES.grades));
@@ -255,56 +285,73 @@
   }
 
   // ========= 出題・採点 =========
+  const getVal=(t,k)=>t[k]||'';
   function generate(){
     const mode=getMode();
-    const count=Math.max(1,Math.min(30,Number(document.getElementById('count').value)||5));
-    const Ginc=getChecked('grade_inc'), Gexc=getChecked('grade_exc');
-    const Uinc=getChecked('unit_inc'),  Uexc=getChecked('unit_exc');
-    const Oinc=getChecked('op_inc'),    Oexc=getChecked('op_exc');
-    const Ninc=getChecked('num_inc'),   Nexc=getChecked('num_exc');
-    const Dinc=getChecked('dig_inc'),   Dexc=getChecked('dig_exc');
-    const Cinc=getChecked('car_inc'),   Cexc=getChecked('car_exc');
-    const Rinc=getChecked('rem_inc'),   Rexc=getChecked('rem_exc');
+    const count=Math.max(1,Math.min(30,Number(qs('#count').value)||5));
 
+    // 共通：除外系の取得
+    const Gexc=getChecked('grade_exc');
+    const Uexc=getChecked('unit_exc');
+
+    // フィルタ関数
     const pass=t=>{
-      // まず除外
-      if (Gexc.length&&Gexc.includes(String(t.grade))) return false;
-      const unitLab=t.unit_label||t.unit||'';
-      if (Uexc.length&&Uexc.includes(unitLab)) return false;
-      if (Oexc.length&&Oexc.includes(t.operation||'')) return false;
-      if (Nexc.length&&Nexc.includes(t.number_type||'')) return false;
-      if (Dexc.length&&Dexc.includes(t.digit||'')) return false;
-      if (Cexc.length&&Cexc.includes(t.carry||'')) return false;
-      if (Rexc.length&&Rexc.includes(t.remainder||'')) return false;
+      const unitLab=getVal(t,'unit_label')||getVal(t,'unit');
+      // 先に除外
+      if (Gexc.length && Gexc.includes(String(t.grade))) return false;
+      if (Uexc.length && Uexc.includes(unitLab)) return false;
 
-      // 次にモード別の「含む」
       if (mode==='gradeUnit'){
-        if (Ginc.length&&!Ginc.includes(String(t.grade))) return false;
-        if (Uinc.length&&!Uinc.includes(unitLab)) return false;
+        const Ginc=getChecked('grade_inc');
+        const Uinc=getChecked('unit_inc');
+        if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
+        if (Uinc.length && !Uinc.includes(unitLab)) return false;
         return true;
       }
-      if (mode==='calcType'){
-        if (Oinc.length&&!Oinc.includes(t.operation||'')) return false;
-        if (Ninc.length&&!Ninc.includes(t.number_type||'')) return false;
-        if (Dinc.length&&!Dinc.includes(t.digit||'')) return false;
-        if (Cinc.length&&!Cinc.includes(t.carry||'')) return false;
-        if (Rinc.length&&!Rinc.includes(t.remainder||'')) return false;
-        if (Ginc.length&&!Ginc.includes(String(t.grade))) return false; // 学年を任意で指定していればAND
-        return true;
-      }
+
       if (mode==='gradeOnly'){
-        if (Ginc.length&&!Ginc.includes(String(t.grade))) return false;
+        const Ginc=getChecked('grade_inc');
+        if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
         return true;
+      }
+
+      // calcType
+      const opsChosen = getChecked('op_sel'); // 必須
+      if (!opsChosen.length) return false;
+      if (!opsChosen.includes(getVal(t,'operation'))) return false;
+
+      // 学年（任意制約）
+      const Ginc=getChecked('grade_inc');
+      if (Ginc.length && !Ginc.includes(String(t.grade))) return false;
+
+      // 加法
+      if (getVal(t,'operation')==='加法'){
+        const digs=getChecked('add_dig'); if (digs.length && !digs.includes(getVal(t,'digit'))) return false;
+        const cars=getChecked('add_carry'); if (cars.length && !cars.includes(getVal(t,'carry'))) return false;
+      }
+      // 減法
+      if (getVal(t,'operation')==='減法'){
+        const digs=getChecked('sub_dig'); if (digs.length && !digs.includes(getVal(t,'digit'))) return false;
+        const bor=getChecked('sub_borrow'); if (bor.length && !bor.includes(getVal(t,'carry'))) return false; // carry列を繰下がり判定に流用
+      }
+      // 乗法
+      if (getVal(t,'operation')==='乗法'){
+        const forms=getChecked('mul_form'); if (forms.length && !forms.includes(getVal(t,'digit'))) return false;
+        const cars=getChecked('mul_carry'); if (cars.length && !cars.includes(getVal(t,'carry'))) return false;
+      }
+      // 除法
+      if (getVal(t,'operation')==='除法'){
+        const forms=getChecked('div_form'); if (forms.length && !forms.includes(getVal(t,'digit'))) return false;
+        const rems=getChecked('div_rem'); if (rems.length && !rems.includes(getVal(t,'remainder'))) return false;
       }
       return true;
     };
 
     const candidates=ALL.filter(pass);
-    const summary=document.getElementById('summary');
+    const summary=qs('#summary');
     if (!candidates.length){
       summary.innerHTML=`<span class="muted">条件に合うテンプレがありません（フィルタを緩めてください）</span>`;
-      document.getElementById('problems').innerHTML='';
-      CURRENT=[]; return;
+      qs('#problems').innerHTML=''; CURRENT=[]; return;
     }
 
     const chosen=[];
@@ -312,31 +359,37 @@
       const t=candidates[rnd(0,candidates.length-1)];
       const env=sampleEnv(t.vars); if(!env){ i--; continue; }
       const text=fillTemplate(t.template,env);
-      const ansRaw=evalExpr(t.answer_expr,env);
-      const ans=String(ansRaw);
+      const ans=String(evalExpr(t.answer_expr,env));
       chosen.push({
         id:`${t.id}-${Date.now()}-${i}`,
         qid:t.id, text, answer:ans,
-        meta:{ grade:t.grade, unit:t.unit_label||t.unit||'', operation:t.operation||'', number_type:t.number_type||'', digit:t.digit||'', carry:t.carry||'', remainder:t.remainder||'', vars:env },
+        meta:{ grade:t.grade, unit:getVal(t,'unit_label')||getVal(t,'unit'), operation:getVal(t,'operation'),
+               number_type:getVal(t,'number_type'), digit:getVal(t,'digit'), carry:getVal(t,'carry'),
+               remainder:getVal(t,'remainder'), vars:env },
         userAnswer:'', result:null
       });
     }
     CURRENT=chosen; renderProblems();
-    summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: ${( {gradeUnit:'学年×単元', calcType:'計算種別', gradeOnly:'学年のみ'} )[mode]}</span>`;
+    summary.innerHTML=`<span class="chip">候補 ${candidates.length} 件</span><span class="chip">出題 ${CURRENT.length} 問</span><span class="chip">モード: 計算種別</span>`;
   }
 
   function renderProblems(){
-    const box=document.getElementById('problems');
+    const box=qs('#problems');
     if(!CURRENT.length){ box.innerHTML='<span class="muted">出題を作成するとここに表示されます。</span>'; return; }
     box.innerHTML=CURRENT.map((q,i)=>{
       const pill=q.result===true?'<span class="pill ok">○ 正解</span>':q.result===false?'<span class="pill ng">× 不正解</span>':'<span class="pill">未採点</span>';
       return `<div class="qrow" data-id="${q.id}">
-        <div><div><strong>Q${i+1}.</strong> ${q.text}</div>
-        <div class="muted">[${q.meta.grade}年] ${q.meta.unit}｜${q.meta.operation}/${q.meta.number_type}/${q.meta.digit}/${q.meta.carry}/${q.meta.remainder}</div></div>
-        <div><input class="answer" placeholder="答え" value="${q.userAnswer}">
-        <div style="text-align:right;margin-top:6px;">${pill}</div></div></div>`;
+        <div>
+          <div><strong>Q${i+1}.</strong> ${q.text}</div>
+          <div class="muted meta-line">[${q.meta.grade}年] ${q.meta.unit}｜${q.meta.operation}/${q.meta.number_type}/${q.meta.digit}/${q.meta.carry}/${q.meta.remainder}</div>
+        </div>
+        <div>
+          <input class="answer" placeholder="答え" value="${q.userAnswer}">
+          <div style="text-align:right;margin-top:6px;">${pill}</div>
+        </div>
+      </div>`;
     }).join('');
-    box.querySelectorAll('input.answer').forEach(inp=>{
+    qsa('input.answer',box).forEach(inp=>{
       inp.addEventListener('input',e=>{
         const id=e.target.closest('.qrow').getAttribute('data-id');
         const item=CURRENT.find(x=>x.id===id); if(item){ item.userAnswer=e.target.value.trim(); }
