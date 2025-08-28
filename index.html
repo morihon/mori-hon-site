@@ -2,222 +2,312 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8" />
-<title>学びの森ドリル（仮）</title>
+<title>学びの森｜ランダム文章題 & 計算</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
 :root{--brand:#2563eb;--ink:#0f172a;--muted:#64748b;--line:#e2e8f0;--bg:#f8fafc;--card:#fff;--accent:#f1f5f9}
-*{box-sizing:border-box}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN","Meiryo",sans-serif;background:var(--bg);color:var(--ink);margin:0}
+*{box-sizing:border-box} body{font-family:system-ui,-apple-system,Segoe UI,Roboto,"Hiragino Kaku Gothic ProN","Meiryo",sans-serif;color:var(--ink);background:var(--bg);margin:0}
 .wrap{max-width:980px;margin:0 auto;padding:16px}
-h1{margin:18px 0 8px;font-size:clamp(22px,3.6vw,32px)}
-.sub{color:var(--muted);margin:0 0 16px}
-.btn{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
-.btn.outline{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+h1{margin:18px 0 6px;font-size:clamp(22px,3.6vw,32px)} .lead{color:var(--muted);margin:0 0 18px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}
+.card{border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:820px){ .grid2{grid-template-columns:1fr} }
+h2{margin:6px 0 8px;font-size:20px}
+.sub{color:var(--muted);margin:0 0 10px}
+.btn{background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer}
+.btn.sm{padding:6px 10px;border-radius:8px;font-weight:600}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .small{font-size:12px;color:var(--muted)}
-.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-/* 共通フィールドセット */
-fieldset{min-width:0;border:1px dashed var(--line);border-radius:12px;padding:12px;background:#fff}
-legend{padding:2px 8px;background:var(--accent);border:1px solid var(--line);border-radius:999px;font-weight:700}
-.fs-grid{display:grid;grid-template-columns:repeat(2,minmax(160px,1fr));gap:10px}
-.fs-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
-label.ck{display:inline-flex;gap:8px;align-items:center}
-label.ck span{white-space:nowrap}
-
-/* 新：計算ごとの縦並びレイアウト */
-.calc-rows{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-.calc-row{display:grid;grid-template-columns:220px 1fr;gap:12px;align-items:start}
-@media (max-width:720px){ .calc-row{grid-template-columns:1fr} }
-.op-box{border:1px solid var(--line);border-radius:12px;background:#fff;min-height:48px;display:flex;align-items:center}
-.op-box .wrap{padding:10px 12px;display:flex;gap:10px;align-items:center}
-.op-box.active{border-color:var(--brand);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
-.detail-box{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px;display:none}
-.detail-box.show{display:block}
-.detail-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:12px}
-.detail-card h3{margin:2px 0 10px}
-
-/* 入力 */
-input[type="number"]{width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
-
-/* 問題表示 */
+.hr{height:1px;background:var(--line);margin:10px 0}
+.accordion{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.acc-hd{background:var(--accent);padding:10px 12px;cursor:pointer;font-weight:700}
+.acc-bd{display:none;padding:12px;background:#fff}
+.acc.open .acc-bd{display:block}
+select,input[type="number"]{border:1px solid var(--line);border-radius:8px;padding:6px 8px}
 #problems .q{border-bottom:1px solid var(--line);padding:10px 2px}
-.answer{width:140px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.answer{width:160px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
+.badge{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>本当に学力がつくドリル。</h1>
-  <p class="sub">学年・単元・計算種別から最適な文章題をランダム生成。将来は正誤履歴で自動調整します。</p>
+  <p class="lead">文章題は「ここまで習った範囲からランダム」。計算は「横断ランダム」と「単元内ランダム」。</p>
 
-  <section id="mode-sec" class="panel">
-    <h2 style="margin:4px 0 10px;font-size:18px">出題条件の選択</h2>
-    <p class="small">読み込み中…（/app/problems.json を参照）</p>
-
-    <fieldset class="panel" style="padding:12px">
-      <legend>出題モード</legend>
-      <div class="row" style="margin:6px 0 2px">
-        <label class="ck"><input type="radio" name="mode" value="grade-unit"> <span>学年 × 単元で指定</span></label>
-        <label class="ck"><input type="radio" name="mode" value="calc" checked> <span>計算種別で指定</span></label>
-        <label class="ck"><input type="radio" name="mode" value="grade-only"> <span>学年のみで指定</span></label>
+  <div class="grid2">
+    <!-- 文章題 -->
+    <section class="card">
+      <h2>📘 文章題</h2>
+      <p class="sub">読む力・考える力を育てる、サービスの看板機能。</p>
+      <div class="row">
+        <button class="btn" onclick="startWordRandom()">ランダムに出題（おすすめ）</button>
+        <button class="btn ghost" onclick="toggle('acc-word')">他の出題</button>
       </div>
-      <div id="mode-box" style="margin-top:10px"></div>
-
-      <div class="row" style="margin-top:12px">
-        <label>出題数 <input type="number" id="n" value="5" min="1" max="20"></label>
-        <button class="btn outline" onclick="createFromFilters()">候補から出題を作成</button>
-        <button class="btn" onclick="renderProblems()">提示</button>
-        <button class="btn outline" onclick="window.print()">PDFにする（印刷）</button>
-        <button class="btn outline" onclick="resetAnswers()">回答リセット</button>
+      <div id="acc-word" class="accordion acc" style="margin-top:10px">
+        <div class="acc-hd" onclick="toggle('acc-word')">学年／単元で出題</div>
+        <div class="acc-bd">
+          <div class="row">
+            <label>学年
+              <select id="grade-word">
+                <option value="">指定なし</option>
+                <option>2</option><option>3</option><option>4</option>
+              </select>
+            </label>
+            <label>単元（任意）
+              <select id="unit-word">
+                <option value="">指定なし</option>
+                <option value="MIX">複合</option>
+                <option value="SPEED">速さ</option>
+                <option value="RATE">割合</option>
+                <option value="FRAC">分数</option>
+              </select>
+            </label>
+            <label>出題数 <input type="number" id="n-word" value="5" min="1" max="20"></label>
+            <button class="btn sm" onclick="startWordByFilters()">この条件で出題</button>
+          </div>
+          <p class="small">※ 後日、教科書会社ごとの配列にも対応予定。</p>
+        </div>
       </div>
-    </fieldset>
+    </section>
+
+    <!-- 計算 -->
+    <section class="card">
+      <h2>🧮 計算</h2>
+      <p class="sub">パターンの壁を越えて、必要な練習をまとめてシャッフル。</p>
+
+      <div class="accordion acc open" id="acc-calc-cross">
+        <div class="acc-hd" onclick="toggle('acc-calc-cross')">横断ランダム（おすすめ）</div>
+        <div class="acc-bd">
+          <div class="row">
+            <span class="badge">四則ごちゃ混ぜ</span>
+            <label>出題数 <input type="number" id="n-calc-cross" value="10" min="1" max="30"></label>
+            <button class="btn sm" onclick="startCalcCross()">出題</button>
+          </div>
+          <p class="small">繰り上がり・繰下がり・商の位・余り などを横断的に出します。</p>
+        </div>
+      </div>
+
+      <div class="accordion acc" id="acc-calc-unit" style="margin-top:10px">
+        <div class="acc-hd" onclick="toggle('acc-calc-unit')">単元内ランダム</div>
+        <div class="acc-bd">
+          <div class="row">
+            <label>種別
+              <select id="calc-kind">
+                <option value="add">足し算</option>
+                <option value="sub">引き算</option>
+                <option value="mul">かけ算</option>
+                <option value="div">わり算</option>
+              </select>
+            </label>
+            <span id="calc-options"></span>
+            <label>出題数 <input type="number" id="n-calc-unit" value="10" min="1" max="30"></label>
+            <button class="btn sm" onclick="startCalcUnit()">出題</button>
+          </div>
+          <p class="small">例）わり算の筆算：商の位や余りの有無をまたいでランダムに。</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section id="play" class="panel" style="display:none">
+    <div class="row" style="justify-content:space-between">
+      <div><strong id="mode-label">出題</strong></div>
+      <div class="row">
+        <button class="btn ghost sm" onclick="window.print()">PDF（印刷）</button>
+        <button class="btn ghost sm" onclick="resetAnswers()">回答をリセット</button>
+      </div>
+    </div>
+    <div id="problems"></div>
   </section>
 
-  <section id="problems" class="panel"></section>
-
-  <section class="panel">
-    <h3 style="margin:0 0 6px">しくみ</h3>
-    <p class="small">テンプレ（Templates）で文章問題を設計し、変数をランダム展開。出題条件でフィルタしながらユニークな問題を生成。将来は正誤履歴と紐づけて最適化予定。</p>
-  </section>
+  <p class="small">※ データは最小セットで動作。後で <code>/app/problems.json</code> に接続可能。</p>
 </div>
 
 <script>
-/* 設定 */
-const VALUES = { grades:['2','3','4'], ops:['加法','減法','乗法','除法'] };
+/* ── ユーティリティ ────────────────────────── */
+function toggle(id){ const el=document.getElementById(id); el.classList.toggle('open'); }
+const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
 
-/* 小物 */
-function fieldset(title, name, opts){
-  const fs = document.createElement('fieldset');
-  const lg = document.createElement('legend'); lg.textContent = title;
-  const row = document.createElement('div'); row.className='fs-row';
-  opts.forEach(v=>{
-    const lab=document.createElement('label'); lab.className='ck';
-    lab.innerHTML = `<input type="checkbox" name="${name}" value="${v}"> <span>${v}</span>`;
-    row.appendChild(lab);
-  });
-  fs.append(lg,row); return fs;
-}
-function fsGrid(...nodes){ const g=document.createElement('div'); g.className='fs-grid'; nodes.forEach(n=>g.appendChild(n)); return g; }
+/* 出題バッファ */
+let CURRENT=[];
 
-/* --- モード描画 --- */
-function renderModeUI(){
-  const mode = document.querySelector('input[name="mode"]:checked')?.value;
-  const box  = document.getElementById('mode-box'); box.innerHTML='';
-  if(mode==='calc'){ renderCalcRows(box); return; }
-  if(mode==='grade-unit'){ box.append(fsGrid(fieldset('学年','gu_grade',VALUES.grades),fieldset('単元（例）','gu_unit',['小数','分数','図形','割合']))); return; }
-  if(mode==='grade-only'){ box.append(fieldset('学年を選択','go_grade',VALUES.grades)); return; }
-}
-document.querySelectorAll('input[name="mode"]').forEach(r=>r.addEventListener('change',renderModeUI));
+/* ── 文章題（最小データ） ───────────────────── */
+const WORD_POOL = [
+  {id:'Q-03-MIX-001-v1',grade:'3',unit:'MIX',text:'りんごが3こあります。さらに4こもらいました。ぜんぶで何こ？',answer:'7'},
+  {id:'Q-03-SPEED-012-v1',grade:'3',unit:'SPEED',text:'家から学校まで1.2km。毎分80mで歩くと何分？',answer:'15'},
+  {id:'Q-04-RATE-021-v1',grade:'4',unit:'RATE',text:'ある数の25%は18です。もとの数はいくつ？',answer:'72'},
+  {id:'Q-03-FRAC-030-v1',grade:'3',unit:'FRAC',text:'みかんを8人で同じ数ずつ分けます。1人分は何こ？',answer:'1'},
+  {id:'Q-02-MIX-010-v1',grade:'2',unit:'MIX',text:'えんぴつが9本。3人に同じ本数ずつわけると1人何本？',answer:'3'}
+];
 
-/* 新：計算ごとの行（左：計算／右：詳細） */
-function renderCalcRows(container){
-  const rows = document.createElement('div'); rows.className='calc-rows';
-  container.appendChild(rows);
-
-  const builders = {
-    '加法':()=>detailCard('加法 の条件', fsGrid(
-      fieldset('桁','add_dig',['1桁','2桁','3桁']),
-      fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問']),
-      fieldset('学年（任意で制約）','add_gi',VALUES.grades),
-      fieldset('学年（除外）','add_ge',VALUES.grades)
-    )),
-    '減法':()=>detailCard('減法 の条件', fsGrid(
-      fieldset('桁','sub_dig',['1桁','2桁','3桁']),
-      fieldset('繰下がり','sub_borrow',['繰下がりあり','なし','不問']),
-      fieldset('学年（任意で制約）','sub_gi',VALUES.grades),
-      fieldset('学年（除外）','sub_ge',VALUES.grades)
-    )),
-    '乗法':()=>detailCard('乗法 の条件', fsGrid(
-      fieldset('形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁']),
-      fieldset('繰り上がり','mul_carry',['繰り上がりあり','なし','不問']),
-      fieldset('学年（任意で制約）','mul_gi',VALUES.grades),
-      fieldset('学年（除外）','mul_ge',VALUES.grades)
-    )),
-    '除法':()=>detailCard('除法 の条件', fsGrid(
-      fieldset('形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁']),
-      fieldset('余り','div_rem',['あり','なし','不問']),
-      fieldset('学年（任意で制約）','div_gi',VALUES.grades),
-      fieldset('学年（除外）','div_ge',VALUES.grades)
-    ))
-  };
-
-  VALUES.ops.forEach(op=>{
-    const row = document.createElement('div'); row.className='calc-row'; row.dataset.op=op;
-    const left = document.createElement('div'); left.className='op-box';
-    left.innerHTML = `<div class="wrap"><input type="checkbox" value="${op}"> <strong>${op}</strong></div>`;
-    const right = document.createElement('div'); right.className='detail-box'; // hidden initially
-    row.append(left,right); rows.appendChild(row);
-
-    const input = left.querySelector('input');
-    input.addEventListener('change', ()=>{
-      if(input.checked){
-        left.classList.add('active');
-        // 初回だけ生成
-        if(!right.firstChild){ right.appendChild(builders[op]()); }
-        right.classList.add('show');
-        syncHeight(row);
-      }else{
-        left.classList.remove('active');
-        right.classList.remove('show');
-        row.style.minHeight = '48px';
-      }
-    });
-
-    // 右側の内容が変わったら高さ再同期
-    right.addEventListener('change', ()=>syncHeight(row));
-    window.addEventListener('resize', ()=>syncHeight(row));
-  });
+function pickN(arr, n){
+  const src = arr.slice(); const out=[];
+  while(out.length<n && src.length){ out.push(src.splice(rnd(0,src.length-1),1)[0]); }
+  return out;
 }
 
-function detailCard(title, inner){
-  const card = document.createElement('div'); card.className='detail-card';
-  const h = document.createElement('h3'); h.textContent=title;
-  card.append(h, inner); return card;
+function startWordRandom(){
+  const n = 5;
+  const pick = pickN(WORD_POOL, n);
+  showProblems(pick, '📘 文章題｜ランダム');
+}
+function startWordByFilters(){
+  const g = document.getElementById('grade-word').value;
+  const u = document.getElementById('unit-word').value;
+  const n = Math.max(1, Math.min(20, Number(document.getElementById('n-word').value||5)));
+  let pool = WORD_POOL.slice();
+  if(g) pool = pool.filter(p=>p.grade===g);
+  if(u) pool = pool.filter(p=>p.unit===u);
+  const pick = pickN(pool, n);
+  showProblems(pick, '📘 文章題｜条件出題');
 }
 
-function syncHeight(row){
-  // 右が見えている時だけ高さを合わせる
-  const right = row.querySelector('.detail-box');
-  if(right && right.classList.contains('show')){
-    const h = Math.max(56, right.getBoundingClientRect().height);
-    row.style.minHeight = h + 'px';
-  }
-}
-
-/* 仮の出題/判定 */
-const CURRENT=[];
-function createFromFilters(){
-  CURRENT.length=0;
-  const n=Math.max(1,Math.min(20,Number(document.getElementById('n').value||5)));
+/* ── 計算：横断ランダム ─────────────────────── */
+function startCalcCross(){
+  const n = Math.max(1, Math.min(30, Number(document.getElementById('n-calc-cross').value||10)));
+  const gen = [];
   for(let i=0;i<n;i++){
-    CURRENT.push({q:`Q${i+1}. りんごを ${2+i} 個ずつ袋に入れます。全部でいくつ？`,answer:null,ok:null});
+    const kind = ['add','sub','mul','div'][rnd(0,3)];
+    gen.push(generateCalc(kind, {cross:true}));
   }
+  showProblems(gen, '🧮 計算｜横断ランダム');
+}
+
+/* ── 計算：単元内ランダム ─────────────────── */
+const UNIT_OPTION_TEMPLATES = {
+  add(){ return `
+    <label>桁 <select id="opt-digits"><option>1桁</option><option selected>2桁</option><option>3桁</option></select></label>
+    <label>繰り上がり <select id="opt-carry"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `},
+  sub(){ return `
+    <label>桁 <select id="opt-digits"><option>1桁</option><option selected>2桁</option><option>3桁</option></select></label>
+    <label>繰下がり <select id="opt-borrow"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `},
+  mul(){ return `
+    <label>形式 <select id="opt-form"><option>1桁×1桁</option><option selected>2桁×1桁</option><option>2桁×2桁</option></select></label>
+  `},
+  div(){ return `
+    <label>形式 <select id="opt-form"><option selected>2桁÷1桁</option><option>3桁÷1桁</option></select></label>
+    <label>余り <select id="opt-rem"><option>不問</option><option>あり</option><option>なし</option></select></label>
+  `}
+};
+function renderUnitOptions(){
+  const kind = document.getElementById('calc-kind').value;
+  document.getElementById('calc-options').innerHTML = UNIT_OPTION_TEMPLATES[kind]();
+}
+function startCalcUnit(){
+  const kind = document.getElementById('calc-kind').value;
+  const n = Math.max(1, Math.min(30, Number(document.getElementById('n-calc-unit').value||10)));
+  const opts = {};
+  if(kind==='add' || kind==='sub'){ opts.digits = document.getElementById('opt-digits').value; }
+  if(kind==='add'){ opts.carry = document.getElementById('opt-carry').value; }
+  if(kind==='sub'){ opts.borrow = document.getElementById('opt-borrow').value; }
+  if(kind==='mul' || kind==='div'){ opts.form = document.getElementById('opt-form').value; }
+  if(kind==='div'){ opts.rem = document.getElementById('opt-rem').value; }
+
+  const out=[];
+  for(let i=0;i<n;i++) out.push(generateCalc(kind, opts));
+  const labelMap = {add:'足し算', sub:'引き算', mul:'かけ算', div:'わり算'};
+  showProblems(out, `🧮 計算｜単元内ランダム（${labelMap[kind]}）`);
+}
+
+/* ── 計算問題ジェネレータ（最小実装） ───────────── */
+function generateCalc(kind, opts={}){
+  let q='', correct='';
+  if(kind==='add'){
+    const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
+    const base = d==='1桁'?9 : d==='2桁'?99 : 999;
+    let a=rnd(1,base), b=rnd(1,base);
+    if(opts.carry==='あり'){
+      // 末位で繰り上がりを起こしやすく
+      a = Math.max(1, a - (a%10)) + rnd(6,9);
+      b = Math.max(1, b - (b%10)) + rnd(6,9);
+    }
+    if(opts.carry==='なし'){
+      // 末位の和が9以下になるよう調整
+      const da=rnd(1,9), db=rnd(0,9-da);
+      a = (a - (a%10)) + da; b = (b - (b%10)) + db;
+    }
+    q = `${a}＋${b} を計算しましょう。`; correct = String(a+b);
+  }
+  if(kind==='sub'){
+    const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
+    const base = d==='1桁'?9 : d==='2桁'?99 : 999;
+    let a=rnd(1,base), b=rnd(1,base);
+    if(a<b){ const t=a;a=b;b=t; }
+    if(opts.borrow==='あり'){
+      // 末位で繰下がりが起きやすく
+      const da=rnd(0,8), db=rnd(da+1,9);
+      a = (a - (a%10)) + da + 10; b = (b - (b%10)) + db;
+    }
+    if(opts.borrow==='なし'){
+      const da=rnd(2,9), db=rnd(0,da); // 末位で借りない
+      a = (a - (a%10)) + da; b = (b - (b%10)) + db;
+    }
+    q = `${a}−${b} を計算しましょう。`; correct = String(a-b);
+  }
+  if(kind==='mul'){
+    const form = opts.form||['1桁×1桁','2桁×1桁','2桁×2桁'][rnd(0,2)];
+    let a,b;
+    if(form==='1桁×1桁'){ a=rnd(2,9); b=rnd(2,9); }
+    if(form==='2桁×1桁'){ a=rnd(12,99); b=rnd(2,9); }
+    if(form==='2桁×2桁'){ a=rnd(12,99); b=rnd(12,99); }
+    q = `${a}×${b} を計算しましょう。`; correct = String(a*b);
+  }
+  if(kind==='div'){
+    const form = opts.form||['2桁÷1桁','3桁÷1桁'][rnd(0,1)];
+    let a,b,r=0;
+    if(form==='2桁÷1桁'){ b=rnd(2,9); const q=rnd(2,9); a=b*q + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*q; }
+    if(form==='3桁÷1桁'){ b=rnd(2,9); const q=rnd(10,99); a=b*q + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*q; }
+    const divQ = Math.floor(a/b), rem = a%b;
+    q = `${a}÷${b} を計算しましょう。` ;
+    correct = rem? `${divQ}あまり${rem}` : String(divQ);
+  }
+  return {id:`GEN-${kind}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, q, correct};
+}
+
+/* ── 表示・採点 ─────────────────────────── */
+function showProblems(items, label){
+  CURRENT = items.map(p => ({...p, answer:null, ok:null}));
+  document.getElementById('mode-label').textContent = label;
+  document.getElementById('play').style.display='block';
   renderProblems();
 }
 function renderProblems(){
-  const box=document.getElementById('problems');
-  if(!CURRENT.length){ box.innerHTML='<div class="small">まだ問題がありません。「候補から出題を作成」を押してください。</div>'; return; }
-  box.innerHTML=CURRENT.map((it,i)=>`
+  const box = document.getElementById('problems');
+  if(!CURRENT.length){ box.innerHTML='<div class="small">まだ問題がありません。</div>'; return; }
+  box.innerHTML = CURRENT.map((it,i)=>`
     <div class="q">
-      <div><strong>${it.q}</strong></div>
+      <div><strong>${i+1}. ${it.q}</strong></div>
       <div class="row" style="margin-top:6px">
         <input class="answer" placeholder="こたえ" data-i="${i}">
-        <button class="btn outline" onclick="gradeOne(${i})" style="padding:6px 10px">判定</button>
+        <button class="btn sm ghost" onclick="gradeOne(${i})">判定</button>
         <span id="r${i}" class="small"></span>
       </div>
-    </div>`).join('');
+    </div>
+  `).join('');
   box.querySelectorAll('.answer').forEach(inp=>{
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter') gradeOne(Number(inp.dataset.i)); });
   });
 }
+function norm(s){ return String(s||'').trim().replace(/\s+/g,''); }
 function gradeOne(i){
-  const ok=Math.random()>.5; CURRENT[i].ok=ok;
-  const el=document.getElementById('r'+i); el.textContent= ok?'◯ 正解！':'× もう一度'; el.style.color= ok?'#16a34a':'#dc2626';
+  const inp = document.querySelector(`.answer[data-i="${i}"]`); const a = norm(inp.value);
+  const corr = norm(CURRENT[i].correct);
+  // 余り表記（13あまり4）と数値一致の両対応
+  const ok = (a===corr) || (a===String(Number(corr))) ;
+  CURRENT[i].ok = ok;
+  const el = document.getElementById('r'+i);
+  el.textContent = ok? '◯ 正解！':'× もう一度';
+  el.style.color = ok? '#16a34a':'#dc2626';
 }
-function resetAnswers(){ CURRENT.forEach(x=>x.answer=null,x=>x.ok=null); renderProblems(); alert('回答をリセットしました'); }
+function resetAnswers(){ CURRENT.forEach(x=>{x.answer=null;x.ok=null}); renderProblems(); alert('回答をリセットしました'); }
 
-/* 初期描画 */
-renderModeUI();
+/* 初期化：単元内オプション描画 */
+renderUnitOptions();
+document.getElementById('calc-kind').addEventListener('change', renderUnitOptions);
 </script>
 </body>
 </html>
