@@ -2,20 +2,35 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
-  <title>問題出題ページ（準備中）｜学びの森</title>
+  <title>問題出題（仮）｜学びの森</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 60px; background:#f8fafc; }
-    h1 { font-size: 28px; margin-bottom:20px; }
-    p { color:#374151; margin-bottom:20px; }
-    a { text-decoration:none; color:#2563eb; font-weight:600; }
+    body { font-family: system-ui, -apple-system, "Noto Sans JP", sans-serif; padding: 40px; background:#f8fafc; }
+    .wrap { max-width: 760px; margin: 0 auto; background: #fff; border:1px solid #e5e7eb; border-radius:12px; padding:24px; }
+    h1 { margin: 0 0 12px; font-size: 24px; }
+    p  { color:#374151; }
+    .back a { text-decoration:none; color:#2563eb; font-weight:600; }
+    .box { background:#f1f5f9; border-radius:8px; padding:12px 14px; margin:14px 0; }
   </style>
 </head>
 <body>
-  <h1>問題出題ページは現在準備中です</h1>
-  <p>ご利用ありがとうございます。まもなく公開予定です！</p>
-  <div class="back">
-    <a href="/">← トップに戻る</a>
+  <div class="wrap">
+    <h1>問題出題（仮）</h1>
+    <div id="info" class="box">読み込み中...</div>
+    <p>※ いまは仮ページです。ここに乱数出題ロジックとPDF出力を実装していきます。</p>
+    <div class="back"><a href="/">← 学年を選び直す</a></div>
   </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const grade = params.get('grade') || '(未指定)';
+    const unit  = params.get('unit')  || '(未指定)';
+    const unitLabelMap = { calc:'計算', word:'文章題', geometry:'図形', all:'指定なし' };
+    const gradeLabel = `小${grade}`;
+    const unitLabel  = unitLabelMap[unit] || unit;
+
+    document.getElementById('info').textContent =
+      `選択：学年＝${gradeLabel}／単元＝${unitLabel}`;
+  </script>
 </body>
 </html>
