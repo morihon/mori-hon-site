@@ -20,7 +20,6 @@ h2{margin:6px 0 8px;font-size:20px}
 .btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .small{font-size:12px;color:var(--muted)}
-.hr{height:1px;background:var(--line);margin:10px 0}
 .accordion{border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .acc-hd{background:var(--accent);padding:10px 12px;cursor:pointer;font-weight:700}
 .acc-bd{display:none;padding:12px;background:#fff}
@@ -29,6 +28,7 @@ select,input[type="number"]{border:1px solid var(--line);border-radius:8px;paddi
 #problems .q{border-bottom:1px solid var(--line);padding:10px 2px}
 .answer{width:160px;padding:6px 8px;border:1px solid var(--line);border-radius:8px}
 .badge{display:inline-block;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700}
+.topbar{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0}
 </style>
 </head>
 <body>
@@ -36,25 +36,41 @@ select,input[type="number"]{border:1px solid var(--line);border-radius:8px;paddi
   <h1>本当に学力がつくドリル。</h1>
   <p class="lead">文章題は「ここまで習った範囲からランダム」。計算は「横断ランダム」と「単元内ランダム」。</p>
 
+  <!-- グローバル：学年設定（両モードに適用） -->
+  <div class="topbar">
+    <strong>学年（全体設定）</strong>
+    <select id="global-grade">
+      <option value="">未指定（すべて）</option>
+      <option>1</option><option>2</option><option>3</option>
+      <option>4</option><option>5</option><option>6</option>
+    </select>
+    <span class="small">※ ここで選んだ学年は文章題・計算の両方に適用されます（各モード内で上書き可）。</span>
+  </div>
+
   <div class="grid2">
     <!-- 文章題 -->
     <section class="card">
       <h2>📘 文章題</h2>
       <p class="sub">読む力・考える力を育てる、サービスの看板機能。</p>
-      <div class="row">
+
+      <!-- 学年は常時表示（デフォルトで必要） -->
+      <div class="row" style="margin-bottom:8px">
+        <label>学年
+          <select id="grade-word">
+            <option value="">（全体設定を使用：<span id="gg1">未指定</span>）</option>
+            <option>1</option><option>2</option><option>3</option>
+            <option>4</option><option>5</option><option>6</option>
+          </select>
+        </label>
+        <label>出題数 <input type="number" id="n-word" value="5" min="1" max="20"></label>
         <button class="btn" onclick="startWordRandom()">ランダムに出題（おすすめ）</button>
-        <button class="btn ghost" onclick="toggle('acc-word')">他の出題</button>
       </div>
-      <div id="acc-word" class="accordion acc" style="margin-top:10px">
-        <div class="acc-hd" onclick="toggle('acc-word')">学年／単元で出題</div>
+
+      <!-- 詳細設定（単元など）はアコーディオン内へ -->
+      <div id="acc-word" class="accordion">
+        <div class="acc-hd" onclick="toggle('acc-word')">詳細設定（単元など）</div>
         <div class="acc-bd">
           <div class="row">
-            <label>学年
-              <select id="grade-word">
-                <option value="">指定なし</option>
-                <option>2</option><option>3</option><option>4</option>
-              </select>
-            </label>
             <label>単元（任意）
               <select id="unit-word">
                 <option value="">指定なし</option>
@@ -64,7 +80,6 @@ select,input[type="number"]{border:1px solid var(--line);border-radius:8px;paddi
                 <option value="FRAC">分数</option>
               </select>
             </label>
-            <label>出題数 <input type="number" id="n-word" value="5" min="1" max="20"></label>
             <button class="btn sm" onclick="startWordByFilters()">この条件で出題</button>
           </div>
           <p class="small">※ 後日、教科書会社ごとの配列にも対応予定。</p>
@@ -78,14 +93,20 @@ select,input[type="number"]{border:1px solid var(--line);border-radius:8px;paddi
       <p class="sub">パターンの壁を越えて、必要な練習をまとめてシャッフル。</p>
 
       <div class="accordion acc open" id="acc-calc-cross">
-        <div class="acc-hd" onclick="toggle('acc-calc-cross')">横断ランダム（おすすめ）</div>
+        <div class="acc-hd" onclick="toggle('acc-calc-cross')">横断ランダム（これまでの範囲）</div>
         <div class="acc-bd">
           <div class="row">
-            <span class="badge">四則ごちゃ混ぜ</span>
+            <label>学年
+              <select id="grade-calc-cross">
+                <option value="">（全体設定を使用：<span id="gg2">未指定</span>）</option>
+                <option>1</option><option>2</option><option>3</option>
+                <option>4</option><option>5</option><option>6</option>
+              </select>
+            </label>
             <label>出題数 <input type="number" id="n-calc-cross" value="10" min="1" max="30"></label>
             <button class="btn sm" onclick="startCalcCross()">出題</button>
           </div>
-          <p class="small">繰り上がり・繰下がり・商の位・余り などを横断的に出します。</p>
+          <p class="small">学年に応じた範囲の計算をランダムに出題します。</p>
         </div>
       </div>
 
@@ -129,50 +150,82 @@ select,input[type="number"]{border:1px solid var(--line);border-radius:8px;paddi
 /* ── ユーティリティ ────────────────────────── */
 function toggle(id){ const el=document.getElementById(id); el.classList.toggle('open'); }
 const rnd = (a,b)=> Math.floor(Math.random()*(b-a+1))+a;
+const norm = s => String(s||'').trim().replace(/\s+/g,'');
+
+/* グローバル学年の反映（表示用） */
+const ggLabel = () => document.getElementById('global-grade').value || '未指定';
+function syncGlobalGradeHints(){
+  document.getElementById('gg1').textContent = ggLabel();
+  document.getElementById('gg2').textContent = ggLabel();
+}
+document.getElementById('global-grade').addEventListener('change', syncGlobalGradeHints);
+syncGlobalGradeHints();
 
 /* 出題バッファ */
 let CURRENT=[];
 
 /* ── 文章題（最小データ） ───────────────────── */
 const WORD_POOL = [
+  {id:'Q-02-MIX-010-v1',grade:'2',unit:'MIX',text:'えんぴつが9本。3人に同じ本数ずつわけると1人何本？',answer:'3'},
   {id:'Q-03-MIX-001-v1',grade:'3',unit:'MIX',text:'りんごが3こあります。さらに4こもらいました。ぜんぶで何こ？',answer:'7'},
   {id:'Q-03-SPEED-012-v1',grade:'3',unit:'SPEED',text:'家から学校まで1.2km。毎分80mで歩くと何分？',answer:'15'},
   {id:'Q-04-RATE-021-v1',grade:'4',unit:'RATE',text:'ある数の25%は18です。もとの数はいくつ？',answer:'72'},
-  {id:'Q-03-FRAC-030-v1',grade:'3',unit:'FRAC',text:'みかんを8人で同じ数ずつ分けます。1人分は何こ？',answer:'1'},
-  {id:'Q-02-MIX-010-v1',grade:'2',unit:'MIX',text:'えんぴつが9本。3人に同じ本数ずつわけると1人何本？',answer:'3'}
+  {id:'Q-03-FRAC-030-v1',grade:'3',unit:'FRAC',text:'みかんを8人で同じ数ずつ分けます。1人分は何こ？',answer:'1'}
 ];
-
 function pickN(arr, n){
   const src = arr.slice(); const out=[];
   while(out.length<n && src.length){ out.push(src.splice(rnd(0,src.length-1),1)[0]); }
   return out;
 }
-
+function getGradeFor(modeSelectId){
+  const local = document.getElementById(modeSelectId).value;
+  return local || document.getElementById('global-grade').value || '';
+}
 function startWordRandom(){
-  const n = 5;
-  const pick = pickN(WORD_POOL, n);
-  showProblems(pick, '📘 文章題｜ランダム');
+  const g = getGradeFor('grade-word');
+  const n = Math.max(1, Math.min(20, Number(document.getElementById('n-word').value||5)));
+  let pool = WORD_POOL.slice();
+  if(g) pool = pool.filter(p=>p.grade===g);
+  const pick = pickN(pool, n);
+  showProblems(pick.map(x=>({q:x.text,correct:x.answer,id:x.id})), '📘 文章題｜ランダム');
 }
 function startWordByFilters(){
-  const g = document.getElementById('grade-word').value;
+  const g = getGradeFor('grade-word');
   const u = document.getElementById('unit-word').value;
   const n = Math.max(1, Math.min(20, Number(document.getElementById('n-word').value||5)));
   let pool = WORD_POOL.slice();
   if(g) pool = pool.filter(p=>p.grade===g);
   if(u) pool = pool.filter(p=>p.unit===u);
   const pick = pickN(pool, n);
-  showProblems(pick, '📘 文章題｜条件出題');
+  showProblems(pick.map(x=>({q:x.text,correct:x.answer,id:x.id})), '📘 文章題｜条件出題');
 }
 
-/* ── 計算：横断ランダム ─────────────────────── */
+/* ── 計算：学年に応じた範囲の横断ランダム ────────── */
+/* 簡易マッピング（後で精密化OK） */
+const CalcScopeByGrade = {
+  '1': { add:true, sub:true, mul:false, div:false },
+  '2': { add:true, sub:true, mul:false, div:false },
+  '3': { add:true, sub:true, mul:true,  div:true  }, // 九九・筆算入門
+  '4': { add:true, sub:true, mul:true,  div:true  },
+  '5': { add:true, sub:true, mul:true,  div:true  },
+  '6': { add:true, sub:true, mul:true,  div:true  }
+};
+function allowedKindsByGrade(g){
+  if(!g) return ['add','sub','mul','div']; // 未指定なら全て
+  const s = CalcScopeByGrade[g] || CalcScopeByGrade['6'];
+  return Object.entries(s).filter(([k,v])=>v).map(([k])=>k);
+}
+
 function startCalcCross(){
+  const g = getGradeFor('grade-calc-cross');
   const n = Math.max(1, Math.min(30, Number(document.getElementById('n-calc-cross').value||10)));
-  const gen = [];
+  const kinds = allowedKindsByGrade(g);
+  const out=[];
   for(let i=0;i<n;i++){
-    const kind = ['add','sub','mul','div'][rnd(0,3)];
-    gen.push(generateCalc(kind, {cross:true}));
+    const kind = kinds[rnd(0,kinds.length-1)];
+    out.push(generateCalc(kind, {grade:g, cross:true}));
   }
-  showProblems(gen, '🧮 計算｜横断ランダム');
+  showProblems(out, `🧮 計算｜横断ランダム${g?`（${g}年まで）`:''}`);
 }
 
 /* ── 計算：単元内ランダム ─────────────────── */
@@ -207,8 +260,7 @@ function startCalcUnit(){
   if(kind==='mul' || kind==='div'){ opts.form = document.getElementById('opt-form').value; }
   if(kind==='div'){ opts.rem = document.getElementById('opt-rem').value; }
 
-  const out=[];
-  for(let i=0;i<n;i++) out.push(generateCalc(kind, opts));
+  const out=[]; for(let i=0;i<n;i++) out.push(generateCalc(kind, opts));
   const labelMap = {add:'足し算', sub:'引き算', mul:'かけ算', div:'わり算'};
   showProblems(out, `🧮 計算｜単元内ランダム（${labelMap[kind]}）`);
 }
@@ -220,50 +272,30 @@ function generateCalc(kind, opts={}){
     const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
     const base = d==='1桁'?9 : d==='2桁'?99 : 999;
     let a=rnd(1,base), b=rnd(1,base);
-    if(opts.carry==='あり'){
-      // 末位で繰り上がりを起こしやすく
-      a = Math.max(1, a - (a%10)) + rnd(6,9);
-      b = Math.max(1, b - (b%10)) + rnd(6,9);
-    }
-    if(opts.carry==='なし'){
-      // 末位の和が9以下になるよう調整
-      const da=rnd(1,9), db=rnd(0,9-da);
-      a = (a - (a%10)) + da; b = (b - (b%10)) + db;
-    }
+    if(opts.carry==='あり'){ a=(a-a%10)+rnd(6,9); b=(b-b%10)+rnd(6,9); }
+    if(opts.carry==='なし'){ const da=rnd(1,9), db=rnd(0,9-da); a=(a-a%10)+da; b=(b-b%10)+db; }
     q = `${a}＋${b} を計算しましょう。`; correct = String(a+b);
   }
   if(kind==='sub'){
     const d = opts.digits||['1桁','2桁','3桁'][rnd(0,2)];
     const base = d==='1桁'?9 : d==='2桁'?99 : 999;
-    let a=rnd(1,base), b=rnd(1,base);
-    if(a<b){ const t=a;a=b;b=t; }
-    if(opts.borrow==='あり'){
-      // 末位で繰下がりが起きやすく
-      const da=rnd(0,8), db=rnd(da+1,9);
-      a = (a - (a%10)) + da + 10; b = (b - (b%10)) + db;
-    }
-    if(opts.borrow==='なし'){
-      const da=rnd(2,9), db=rnd(0,da); // 末位で借りない
-      a = (a - (a%10)) + da; b = (b - (b%10)) + db;
-    }
+    let a=rnd(1,base), b=rnd(1,base); if(a<b){ const t=a;a=b;b=t; }
+    if(opts.borrow==='あり'){ const da=rnd(0,8), db=rnd(da+1,9); a=(a-a%10)+da+10; b=(b-b%10)+db; }
+    if(opts.borrow==='なし'){ const da=rnd(2,9), db=rnd(0,da); a=(a-a%10)+da; b=(b-b%10)+db; }
     q = `${a}−${b} を計算しましょう。`; correct = String(a-b);
   }
   if(kind==='mul'){
     const form = opts.form||['1桁×1桁','2桁×1桁','2桁×2桁'][rnd(0,2)];
-    let a,b;
-    if(form==='1桁×1桁'){ a=rnd(2,9); b=rnd(2,9); }
+    let a,b; if(form==='1桁×1桁'){ a=rnd(2,9); b=rnd(2,9); }
     if(form==='2桁×1桁'){ a=rnd(12,99); b=rnd(2,9); }
     if(form==='2桁×2桁'){ a=rnd(12,99); b=rnd(12,99); }
     q = `${a}×${b} を計算しましょう。`; correct = String(a*b);
   }
   if(kind==='div'){
     const form = opts.form||['2桁÷1桁','3桁÷1桁'][rnd(0,1)];
-    let a,b,r=0;
-    if(form==='2桁÷1桁'){ b=rnd(2,9); const q=rnd(2,9); a=b*q + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*q; }
-    if(form==='3桁÷1桁'){ b=rnd(2,9); const q=rnd(10,99); a=b*q + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*q; }
-    const divQ = Math.floor(a/b), rem = a%b;
-    q = `${a}÷${b} を計算しましょう。` ;
-    correct = rem? `${divQ}あまり${rem}` : String(divQ);
+    let a,b; if(form==='2桁÷1桁'){ b=rnd(2,9); const qv=rnd(2,9); a=b*qv + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*qv; }
+    if(form==='3桁÷1桁'){ b=rnd(2,9); const qv=rnd(10,99); a=b*qv + (opts.rem==='あり'? rnd(1,b-1):0); if(opts.rem==='なし') a=b*qv; }
+    const qv = Math.floor(a/b), r = a%b; q = `${a}÷${b} を計算しましょう。`; correct = r? `${qv}あまり${r}` : String(qv);
   }
   return {id:`GEN-${kind}-${Date.now()}-${Math.random().toString(36).slice(2,6)}`, q, correct};
 }
@@ -292,12 +324,10 @@ function renderProblems(){
     inp.addEventListener('keydown',e=>{ if(e.key==='Enter') gradeOne(Number(inp.dataset.i)); });
   });
 }
-function norm(s){ return String(s||'').trim().replace(/\s+/g,''); }
 function gradeOne(i){
   const inp = document.querySelector(`.answer[data-i="${i}"]`); const a = norm(inp.value);
-  const corr = norm(CURRENT[i].correct);
-  // 余り表記（13あまり4）と数値一致の両対応
-  const ok = (a===corr) || (a===String(Number(corr))) ;
+  const corr = norm(CURRENT[i].correct || CURRENT[i].answer);
+  const ok = (a===corr) || (a===String(Number(corr)));
   CURRENT[i].ok = ok;
   const el = document.getElementById('r'+i);
   el.textContent = ok? '◯ 正解！':'× もう一度';
@@ -305,7 +335,8 @@ function gradeOne(i){
 }
 function resetAnswers(){ CURRENT.forEach(x=>{x.answer=null;x.ok=null}); renderProblems(); alert('回答をリセットしました'); }
 
-/* 初期化：単元内オプション描画 */
+/* 初期描画 */
+function renderUnitOptions(){ const kind = document.getElementById('calc-kind').value; document.getElementById('calc-options').innerHTML = UNIT_OPTION_TEMPLATES[kind](); }
 renderUnitOptions();
 document.getElementById('calc-kind').addEventListener('change', renderUnitOptions);
 </script>
