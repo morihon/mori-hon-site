@@ -1,0 +1,62 @@
+[
+  {
+    "id": "W3-0001",
+    "grade": 3,
+    "unit_label": "文章題/等分け",
+    "unit": "文章題/等分け",
+    "operation": "除法",
+    "number_type": "整数",
+    "digit": "2桁",
+    "carry": "なし",
+    "remainder": "なし",
+    "template": "りんごを{each}個ずつ袋に入れます。全部で{total}個あるとき、袋はいくつ必要ですか。",
+    "vars": "each: 3..5; bags: 2..6; total: each * bags; ensure: total % each == 0",
+    "answer_expr": "total / each",
+    "answer_format": "integer"
+  },
+  {
+    "id": "C2-0003",
+    "grade": 2,
+    "unit_label": "計算/加法",
+    "unit": "計算/加法",
+    "operation": "加法",
+    "number_type": "整数",
+    "digit": "2桁",
+    "carry": "繰り上がりあり",
+    "remainder": "なし",
+    "template": "{a} + {b} を計算しなさい。",
+    "vars": "a: 47..89; b: 35..68; ensure: (a % 10 + b % 10) >= 10",
+    "answer_expr": "a + b",
+    "answer_format": "integer"
+  },
+  {
+    "id": "M3-0004",
+    "grade": 3,
+    "unit_label": "計算/乗法",
+    "unit": "計算/乗法",
+    "operation": "乗法",
+    "number_type": "整数",
+    "digit": "2桁×1桁",
+    "carry": "不問",
+    "remainder": "なし",
+    "template": "{x} × {y} を計算しなさい。",
+    "vars": "x: 12..29; y: 3..8",
+    "answer_expr": "x * y",
+    "answer_format": "integer"
+  },
+  {
+    "id": "W4-0010",
+    "grade": 4,
+    "unit_label": "文章題/単価と個数",
+    "unit": "文章題/単価と個数",
+    "operation": "乗法",
+    "number_type": "整数",
+    "digit": "2桁×1桁",
+    "carry": "不問",
+    "remainder": "なし",
+    "template": "1こ {price} 円の品物を {num} こ買いました。だいきんはいくらですか。",
+    "vars": "price: 40..120; num: 2..9",
+    "answer_expr": "price * num",
+    "answer_format": "integer"
+  }
+]
