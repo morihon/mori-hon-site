@@ -175,41 +175,97 @@ function fieldset(title,key,values){
   fs.appendChild(row); return fs;
 }
 
-/* ★ 新：計算種別 UI（左：四則／右：細目） */
+// 計算種別：左右2カラム（左＝四則、右＝細目）＋ 高さ同期
 function renderCalcSubPanels(container){
-  container.innerHTML='';
-  const wrap=document.createElement('div'); wrap.className='calc-layout';
-  const left=document.createElement('div'); left.className='ops-list';
-  const right=document.createElement('div'); right.className='details';
-  right.innerHTML='<div class="muted">左の計算を選ぶと、細かな条件が表示されます。</div>';
-  wrap.append(left,right); container.appendChild(wrap);
+  container.innerHTML = '';
 
-  const builders={
-    '加法': g=>{ g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁'])); g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問'])); },
-    '減法': g=>{ g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁'])); g.appendChild(fieldset('繰下がり','sub_borrow',['繰下がりあり','なし','不問'])); },
-    '乗法': g=>{ g.appendChild(fieldset('形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁'])); g.appendChild(fieldset('繰り上がり','mul_carry',['繰り上がりあり','なし','不問'])); },
-    '除法': g=>{ g.appendChild(fieldset('形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁'])); g.appendChild(fieldset('余り','div_rem',['あり','なし','不問'])); }
+  const wrap  = document.createElement('div');
+  wrap.className = 'calc-layout';
+
+  const left  = document.createElement('div');
+  left.className = 'ops-list';
+
+  const right = document.createElement('div');
+  right.className = 'details';
+  right.innerHTML = '<div class="muted">左の計算を選ぶと、細かな条件が表示されます。</div>';
+
+  wrap.append(left, right);
+  container.appendChild(wrap);
+
+  // 右パネルの中身を構築
+  const builders = {
+    '加法': g => { g.appendChild(fieldset('桁','add_dig',['1桁','2桁','3桁']));
+                   g.appendChild(fieldset('繰り上がり','add_carry',['繰り上がりあり','なし','不問'])); },
+    '減法': g => { g.appendChild(fieldset('桁','sub_dig',['1桁','2桁','3桁']));
+                   g.appendChild(fieldset('繰下がり','sub_borrow',['繰下がりあり','なし','不問'])); },
+    '乗法': g => { g.appendChild(fieldset('形式','mul_form',['1桁×1桁','2桁×1桁','2桁×2桁']));
+                   g.appendChild(fieldset('繰り上がり','mul_carry',['繰り上がりあり','なし','不問'])); },
+    '除法': g => { g.appendChild(fieldset('形式','div_form',['2桁÷1桁','3桁÷1桁','2桁÷2桁']));
+                   g.appendChild(fieldset('余り','div_rem',['あり','なし','不問'])); }
   };
 
+  // 右を描く
   function renderRight(opName){
-    right.innerHTML='';
-    const h=document.createElement('h3'); h.style.margin='0 0 8px'; h.textContent=`${opName} の条件`;
-    const grid=document.createElement('div'); grid.className='grid';
+    right.innerHTML = '';
+    const h   = document.createElement('h3');
+    h.textContent = `${opName} の条件`;
+
+    const grid = document.createElement('div'); grid.className = 'grid';
     builders[opName](grid);
     grid.appendChild(fieldset('学年（任意で制約）','grade_inc',VALUES.grades));
     grid.appendChild(fieldset('学年（除外）','grade_exc',VALUES.grades));
-    right.append(h,grid);
+
+    right.append(h, grid);
+
+    // 右の高さに合わせて左の active ブロックを伸ばす
+    requestAnimationFrame(matchActiveHeight);
   }
 
-  ['加法','減法','乗法','除法'].forEach(name=>{
-    const row=document.createElement('label'); row.className='op-item';
-    row.innerHTML=`<input type="checkbox" data-key="op_sel" value="${name}"><span>${name}</span>`;
-    const input=row.querySelector('input');
-    const setActive=()=>row.classList.toggle('active',input.checked);
-    row.addEventListener('click',()=>{ renderRight(name); setTimeout(setActive,0); });
-    input.addEventListener('change',setActive);
-    left.appendChild(row);
-  });
+  // 左を描く（クリックで右を切り替え）
+  function makeLeftItem(name){
+    const row  = document.createElement('div');
+    row.className = 'op-item';
+    row.innerHTML = `<div class="label-wrap"><input type="checkbox" data-key="op_sel" value="${name}"><span>${name}</span></div>`;
+    const input = row.querySelector('input');
+
+    // “選択（フィルタ用）”と“表示切替”を別イベントで扱う
+    row.addEventListener('click', (e)=>{
+      // チェックボックスクリック時はチェック状態の変更だけ
+      if(e.target === input){ row.classList.toggle('active', input.checked); return; }
+      // ラベル領域クリック時は右パネルの表示切替
+      renderRight(name);
+      // 見た目のアクティブ表示
+      qsa('.ops-list .op-item').forEach(el=>{ el.classList.remove('active'); });
+      row.classList.add('active');
+    });
+
+    // 初期は“加法”の詳細を右に表示
+    return row;
+  }
+
+  ['加法','減法','乗法','除法'].forEach(name => left.appendChild(makeLeftItem(name)));
+  renderRight('加法');
+  // “加法”を見た目アクティブに
+  const first = left.firstElementChild; first.classList.add('active');
+
+  // 右の高さに合わせて左を伸ばす
+  function matchActiveHeight(){
+    const active = qs('.ops-list .op-item.active');
+    if(!active) return;
+    // 一旦リセット
+    active.style.minHeight = '';
+    active.classList.add('match-height');
+
+    // 右パネルの高さを取得（padding を含む）
+    const h = right.getBoundingClientRect().height;
+    // 左アクティブに min-height を付与
+    active.style.minHeight = `${Math.max(56, h)}px`;
+  }
+
+  // 右側の各入力が変わったら高さ再計算
+  right.addEventListener('change', () => requestAnimationFrame(matchActiveHeight));
+  window.addEventListener('resize', () => requestAnimationFrame(matchActiveHeight));
+}
 
   renderRight('加法'); // 初期表示
 }
